@@ -1,13 +1,12 @@
-# Hendricks
+# Gilfoyle
 
 ### Introduction
 
-This is the core data loading service for the following:
+MLOps service for the following:
 
-1. Simple load that drops existing records in raw collection, and reloads data over the specified window
-   * May need to load year by year if you aren't sure how far back the data goes.
-2. QC checks missing minutes over a specified window, and attempts to reload
-3. Stream load reads live data into the raw price collection
+1. a
+2. b
+3. c
 
 ### Service
 
