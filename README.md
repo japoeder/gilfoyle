@@ -1,4 +1,4 @@
-![Gilfoyle Banner](https://raw.githubusercontent.com/japoeder/gilfoyle/main/gilfoyle/_img/gilfoyle_banner.jpg))))
+![Gilfoyle Banner](https://raw.githubusercontent.com/japoeder/gilfoyle/main/gilfoyle/_img/gilfoyle_banner.jpg)
 
 # Gilfoyle 🚀
 
