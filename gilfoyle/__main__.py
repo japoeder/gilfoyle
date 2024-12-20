@@ -123,10 +123,12 @@ def etl_quote_loader():
         live_load = data.get("live_load")
         historical_load = data.get("historical_load")
         job_scope = data.get("job_scope")
+        local_load = data.get("local_load")
         etl_obj = RunEtl(
             live_load=live_load,
             historical_load=historical_load,
             job_scope=job_scope,
+            local_load=local_load,
         )
         if not job_scope:
             job_scope = "comp_load"
@@ -154,12 +156,3 @@ def etl_quote_loader():
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=8002)
-    # ticker_expansion()
-    # load_historical_quote_alpacaAPI(
-    #     ticker_symbol='AAPL',
-    #     collection_name='rawPriceColl',
-    #     from_date='2017-03-25T00:00',
-    #     to_date='2017-04-3T23:59',
-    #     batch_size=7500,
-    #     creds_file_path="/Users/jpoeder/pydev/quantum_trade/_cred/creds.json"
-    # )

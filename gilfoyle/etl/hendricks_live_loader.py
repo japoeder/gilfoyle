@@ -53,10 +53,12 @@ def hendricks_live_loader(job_scope: str = "complete"):
     # Define the headers
     headers = {"Content-Type": "application/json", "x-api-key": QT_HENDRICKS_API_KEY}
 
+    endpoint = "http://localhost:8001/hendricks/load_quotes"
+
     # Send the POST request to the Flask server
     try:
         response = requests.post(
-            "https://poederhome.myvnc.com/hendricks/load_quotes",
+            endpoint,
             json=data,
             headers=headers,
             timeout=6000,
