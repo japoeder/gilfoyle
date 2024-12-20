@@ -123,12 +123,10 @@ def etl_quote_loader():
         live_load = data.get("live_load")
         historical_load = data.get("historical_load")
         job_scope = data.get("job_scope")
-        local_load = data.get("local_load")
         etl_obj = RunEtl(
             live_load=live_load,
             historical_load=historical_load,
             job_scope=job_scope,
-            local_load=local_load,
         )
         if not job_scope:
             job_scope = "comp_load"
