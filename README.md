@@ -8,27 +8,29 @@
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-A robust financial data ingestion service for real-time and historical stock pricing, company news, social data, and more.
+A robust MLOps service for real-time orchestration of ETL, RAG, Deep Learning, etc. workflows.
+
+# ***NEED TO UPDATE BELOW THIS LINE***
 
 ## 📋 Table of Contents
 
 - [Gilfoyle 🚀](#gilfoyle-)
-  - [📋 Table of Contents](#-table-of-contents)
-  - [🔍 Overview](#-overview)
-  - [✨ Features](#-features)
-  - [🛠 Installation](#-installation)
-  - [📊 Data Sources](#-data-sources)
-    - [Market Quotes](#market-quotes)
-    - [News Sources](#news-sources)
-  - [📖 Usage](#-usage)
-    - [Quote Loader](#quote-loader)
-      - [Parameters](#parameters)
-    - [Stream Loader](#stream-loader)
-    - [News Loader](#news-loader)
-  - [📁 Project Structure](#-project-structure)
-  - [🔧 Development](#-development)
-    - [Service Management](#service-management)
-    - [Code Quality](#code-quality)
+    - [📋 Table of Contents](#-table-of-contents)
+    - [🔍 Overview](#-overview)
+    - [✨ Features](#-features)
+    - [🛠 Installation](#-installation)
+    - [📊 Data Sources](#-data-sources)
+        - [Market Quotes](#market-quotes)
+        - [News Sources](#news-sources)
+    - [📖 Usage](#-usage)
+        - [Quote Loader](#quote-loader)
+            - [Parameters](#parameters)
+        - [Stream Loader](#stream-loader)
+        - [News Loader](#news-loader)
+    - [📁 Project Structure](#-project-structure)
+    - [🔧 Development](#-development)
+        - [Service Management](#service-management)
+        - [Code Quality](#code-quality)
 
 ## 🔍 Overview
 
