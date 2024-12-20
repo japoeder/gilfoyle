@@ -95,7 +95,7 @@ def requires_api_key(f):
 
 
 # TODO: update to return meta data in response (can prob. use timestame to control)
-@app.route("/etl_quote_expansion", methods=["POST"])
+@app.route("/gilfoyle/etl_quote_expansion", methods=["POST"])
 @requires_api_key
 def etl_quote_expansion():
     """Endpoint to load a new stock ticker into the database."""
@@ -113,7 +113,7 @@ def etl_quote_expansion():
     )
 
 
-@app.route("/etl_quote_loader", methods=["POST"])
+@app.route("/gilfoyle/etl_quote_loader", methods=["POST"])
 @requires_api_key
 def etl_quote_loader():
     """Endpoint to load a new stock ticker into the database."""
