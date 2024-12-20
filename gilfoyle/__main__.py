@@ -40,7 +40,6 @@ setup_logging()
 # Check if API key is set
 creds_path = get_path("creds")
 QT_GILFOYLE_API_KEY = load_credentials(creds_path, "gilfoyle_api")[0]
-print(f"QT_GILFOYLE_API_KEY: {QT_GILFOYLE_API_KEY}")
 if QT_GILFOYLE_API_KEY is None:
     print("Error: QT_GILFOYLE_API_KEY environment variable is not set.")
 
