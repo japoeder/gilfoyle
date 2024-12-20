@@ -1,95 +1,144 @@
-# Gilfoyle
+![Hendricks Banner](https://raw.githubusercontent.com/japoeder/gilfoyle/main/gilfoyle/_img/gilfoyle_banner.jpg)
 
-### Introduction
+# Gilfoyle 🚀
 
-MLOps service for the following:
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
 
-1. a
-2. b
-3. c
+[![MongoDB](https://img.shields.io/badge/MongoDB-4.4%2B-green.svg)](https://www.mongodb.com/)
 
-### Service
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-1. Restart the service if necessary with:
-   * qt_restart_hl
+A robust financial data ingestion service for real-time and historical stock pricing, company news, social data, and more.
 
-### Usage Details:
+## 📋 Table of Contents
 
-```commandline
-simple load: qt_hendricks_load via the terminal
-  
-optional "parameters "arguments:
-  -t    Ticker symbol (required)
-  -f    File (optional)
-  -s    From date (default: 2024-10-03T09:30:00-04:00)
-  -e    To date (default: 2024-10-04T00:59:32-04:00)
-  -c    Collection name (default: rawPriceColl)
-  -b    Batch size (default: 50000)
-  -h    Show this help message
+- [Gilfoyle 🚀](#gilfoyle-)
+  - [📋 Table of Contents](#-table-of-contents)
+  - [🔍 Overview](#-overview)
+  - [✨ Features](#-features)
+  - [🛠 Installation](#-installation)
+  - [📊 Data Sources](#-data-sources)
+    - [Market Quotes](#market-quotes)
+    - [News Sources](#news-sources)
+  - [📖 Usage](#-usage)
+    - [Quote Loader](#quote-loader)
+      - [Parameters](#parameters)
+    - [Stream Loader](#stream-loader)
+    - [News Loader](#news-loader)
+  - [📁 Project Structure](#-project-structure)
+  - [🔧 Development](#-development)
+    - [Service Management](#service-management)
+    - [Code Quality](#code-quality)
+
+## 🔍 Overview
+
+Hendricks is a core data loading service designed for efficient financial data ingestion. It provides three primary functionalities:
+
+1. **Batch Loading**: Performs complete data reloads over specified time windows
+2. **Quality Control**: Implements automated checks for missing data points and recovery mechanisms
+3. **Real-time Streaming**: Enables live market data ingestion into raw price collections
+
+## ✨ Features
+
+- Multi-source data integration (FMP, Alpaca, etc.)
+- Real-time and historical data processing
+- Automated quality control and data validation
+- Flexible API for custom data queries
+- Robust error handling and logging
+- Command-line interface for easy operation
+
+## 🛠 Installation
+
+1. Clone the repository
+2. Install dependencies:
+
+```bash
+pip install -r requirements.txt
 ```
 
-## Python Packaging
+3. Configure your API keys (see Configuration section)
 
-This code is packaged as a python module, with the structure outlined in the section below.
+## 📊 Data Sources
 
-### Project Layout
+### Market Quotes
 
-* [pid_0001_collectability_model_v1](collectability_model): The parent or "root" folder containing all of these files. Can technically have any name.
-  * [README.md](README.md):
-    The guide you're reading.
-  * [`__init__.py`](lab1/__init__.py)
-    For package / module structure.
-  * [`.`](lab1/__init__.py)gitignore
-    Version control doc
-  * .pre-commit-config.yaml
-    Pre-commit hooks for formatting and linting
-  * .pylintrc
-    Linter parameter file.
-  * [`lint.py`](lab1/__init__.py)
-    Linter driver.
-  * [`p`](lab1/__init__.py)yproject.toml
-    Black exception logic.
-  * [`r`](lab1/__init__.py)eq.txt
-    Required libraries for model.
-  * [collectability_model](.): This is the *module* in our *package*.
-    * [`html`](lab1/__init__.py)
-      Directory that holds html output
-    * [`t`](lab1/__init__.py)emplates
-      Directory that holds templates for base and enhanced model scenarios and tuning.
-    * [`u`](lab1/__init__.py)tilities
-      * [`m`](lab1/__init__.py)ake_json.py
-        Shell for a program to create a json payload if data comes in another format
-      * [`m`](lab1/__init__.py)l_utils.py
-        Cos similarity model
-      * open_html.py
-        Opens html output if requested
-    * [`__init__.py`](lab1/__init__.py)
-      Expose what functions, variables, classes, etc when scripts import this module.
-    * [`__main__.py`](lab1/__main__.py)
-      This file is the entrypoint to your program when ran as a program.
-    * `collectability_model.py`
-      Driver program for the module
-    * `build_report_template.py`
-      Customizes html template for score report
-    * `load_scenario.py`
-      Method to read in data
-    * `load_tuning.py`
-      Helper method to read in tuning parameters
-    * `proc_wams.py`
-      Create weights and measures used in methodology
-    * `score_report.py`
-      Generate the final score report using customized template
-    * `stage_i_scoring.py`
-      Stage I scoring to assess fraud
-    * `stage_ii_scoring.py`
-      Stage II scoring to get modeled collectability score
-    * `stage_iii_planning_calcs.py`
-      Run final calculations for payment / settlement planning
-    * [`t`](lab1/__init__.py)uning.json
-      Default tuning sensitivities for attribute weights
-    * `validate_input_files.py`
-      Validates the json inputs (raw data and tuning)
-    * `utilities/make_json.py`
-      Use to format raw data if not in json format
-    * `utilities/open_html.py`
-      Opens the system browser and displays report
+- **Alpaca**: Real-time and historical market data (supplementary to FMP)
+- **Financial Modeling Prep (FMP)**: Primary source for market data
+
+### News Sources
+
+- **Financial Modeling Prep (FMP)**: Financial news and analysis
+- **Mediastack**: General market news
+- **TheNewsAPI**: Additional news coverage
+
+## 📖 Usage
+
+### Quote Loader
+
+```bash
+# Load historical quotes
+qt_quote_load -t "AAPL,GOOG" -s "2024-11-01T00:00:00Z" -e "2024-11-15T23:59:00Z" -o "fmp"
+```
+
+#### Parameters
+
+| Parameter | Description       | Default              | Required |
+| --------- | ----------------- | -------------------- | -------- |
+| `-t`      | Ticker symbol(s)  | -                    | Yes      |
+| `-s`      | Start date        | 2024-10-03T09:30:00Z | No       |
+| `-e`      | End date          | Current time         | No       |
+| `-c`      | Collection name   | rawPriceColl         | No       |
+| `-m`      | Minute adjustment | True                 | No       |
+| `-o`      | Data source       | "fmp"                | No       |
+
+### Stream Loader
+
+```bash
+# Start real-time data stream
+qt_stream_load -t "TSLA" -s "2024-10-03T09:30:00Z"
+```
+
+### News Loader
+
+```bash
+# Load news articles
+qt_news_load -t "TSLA" -s "2024-11-01T00:00:00Z" -e "2024-11-15T23:59:00Z" -a 10 -n "alpaca"
+```
+
+> Note: Alpaca news API has a limit of 50 articles per request
+
+## 📁 Project Structure
+
+```
+hendricks/
+├── README.md         # Project documentation
+├── __init__.py       # Package initialization
+├── hendricks/        # Core module
+│   ├── _utils/       # Utility functions
+│   ├── _scripting/   # CLI scripts
+│   ├── ingest_news/  # News ingestion logic
+│   ├── ingest_quotes/# Quote ingestion logic
+│   ├── stream_quotes/# Real-time streaming
+│   └── __main__.py   # Entry point
+├── .pre-commit-config.yaml
+├── .pylintrc
+├── pyproject.toml
+└── req.txt           # Dependencies
+```
+
+## 🔧 Development
+
+### Service Management
+
+```bash
+# Restart the service
+qt_restart_hl
+```
+
+### Code Quality
+
+This project uses:
+
+- Black for code formatting
+- Pylint for code analysis
+- Pre-commit hooks for consistency
