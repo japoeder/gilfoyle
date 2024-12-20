@@ -76,7 +76,7 @@ def hendricks_hist_loader(job_scope: str = "complete"):
                 try:
                     # TODO: Abstract the endpoint
                     response = requests.post(
-                        "https://poederhome.myvnc.com:8001/load_quotes/",
+                        "https://poederhome.myvnc.com/hendricks/load_quotes/",
                         json=data_payload,
                         headers=headers,
                         timeout=6000,
