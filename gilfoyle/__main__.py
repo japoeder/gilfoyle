@@ -123,12 +123,22 @@ def etl_quote_loader():
         data = request.json
         live_load = data.get("live_load")
         historical_load = data.get("historical_load")
-        etl_obj = RunEtl(live_load=live_load, historical_load=historical_load)
-        etl_obj.initiate_hendricks_load()
+        job_scope = data.get("job_scope")
+        etl_obj = RunEtl(
+            live_load=live_load,
+            historical_load=historical_load,
+            job_scope=job_scope,
+        )
+        if not job_scope:
+            job_scope = "comp_load"
+
+        etl_obj.initiate_hendricks_load(job_scope=job_scope)
+
         if live_load:
             load_type = "live"
         elif historical_load:
             load_type = "historical"
+
         return (
             jsonify(
                 {"status": f"Hendricks quote loader completed for {load_type} load."}

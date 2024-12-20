@@ -15,7 +15,7 @@ from gilfoyle._utils.get_path import get_path
 from gilfoyle._utils.load_credentials import load_credentials
 
 
-def hendricks_live_loader():
+def hendricks_live_loader(job_scope: str = "complete"):
     """
     Load live quote data for the tickers in the job_ctrl file.
     """
@@ -30,7 +30,7 @@ def hendricks_live_loader():
     job_ctrl_path = get_path("job_ctrl")
     with open(job_ctrl_path, "r", encoding="utf-8") as f:
         job = json.load(f)
-    comp_load = job["comp_load"]  # This should be a list of ticker symbols
+    comp_load = job[job_scope]  # This should be a list of ticker symbols
 
     # Split tickers into sub-lists of max 3 tickers each
     tickers = comp_load  # Use comp_load directly
