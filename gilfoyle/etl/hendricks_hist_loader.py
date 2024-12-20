@@ -4,7 +4,6 @@ Data loader for historical quotes from Hendricks
 import os
 import sys
 import json
-import time  # Import time for sleep functionality
 from datetime import datetime, timedelta
 import requests
 
@@ -100,5 +99,3 @@ def hendricks_hist_loader(job_scope: str = "complete"):
                     print("The request timed out")
                 except requests.exceptions.RequestException as err:
                     print(f"An error occurred: {err}")
-
-                time.sleep(2)  # Delay for 2 seconds between iterations
