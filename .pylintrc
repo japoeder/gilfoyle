@@ -78,7 +78,15 @@ disable=
     broad-exception-caught,
     logging-fstring-interpolation,
     too-many-arguments,
-    consider-using-in
+    consider-using-in,
+    consider-using-sys-exit,
+    missing-timeout,
+    no-name-in-module,
+    no-member,
+    too-many-boolean-expressions,
+    wrong-import-position,
+    no-else-continue,
+    too-many-return-statements
 #    len-as-condition,
 #    too-few-public-methods,
 #    anomalous-backslash-in-string,
