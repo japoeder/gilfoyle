@@ -18,7 +18,7 @@ class RunEtl:
         live_load: bool = False,
         historical_load: bool = False,
         job_scope: str = "comp_load",
-        sources: str = None,
+        sources: list = None,
     ):
         self.live_load = live_load
         self.historical_load = historical_load

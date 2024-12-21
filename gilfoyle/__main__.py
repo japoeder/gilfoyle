@@ -169,8 +169,6 @@ def etl_news_loader():
         sources = data.get("sources")
         if not sources:
             sources = ["fmp"]
-        else:
-            sources = sources.split(",")
         logging.info(f"Passing sources: {sources}")
 
         etl_obj = RunEtl(
