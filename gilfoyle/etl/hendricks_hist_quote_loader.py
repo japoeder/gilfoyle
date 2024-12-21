@@ -19,7 +19,7 @@ def split_tickers(tickers, max_size=3):
     return [tickers[i : i + max_size] for i in range(0, len(tickers), max_size)]
 
 
-def hendricks_hist_loader(job_scope: str = "complete"):
+def hendricks_hist_quote_loader(job_scope: str = "complete"):
     """
     Data loader for historical quotes from Hendricks
     """
@@ -34,10 +34,10 @@ def hendricks_hist_loader(job_scope: str = "complete"):
     job_ctrl_path = get_path("job_ctrl")
     with open(job_ctrl_path, encoding="utf-8") as f:
         data = json.load(f)
-    comp_load = data[job_scope]  # This should be a list of ticker symbols
+    scope = data[job_scope]  # This should be a list of ticker symbols
 
     # Split tickers into sub-lists of max 3 tickers each
-    ticker_batches = split_tickers(comp_load)  # Use comp_load directly
+    ticker_batches = split_tickers(scope)  # Use comp_load directly
 
     # Set the end date to yesterday
     end_date = (datetime.now() - timedelta(days=1)).strftime(

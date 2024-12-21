@@ -14,7 +14,7 @@ from gilfoyle._utils.get_path import get_path
 from gilfoyle._utils.load_credentials import load_credentials
 
 
-def hendricks_live_loader(job_scope: str = "complete"):
+def hendricks_live_quote_loader(job_scope: str = "comp_load"):
     """
     Load live quote data for the tickers in the job_ctrl file.
     """
