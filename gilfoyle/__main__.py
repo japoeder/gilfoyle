@@ -131,7 +131,7 @@ def etl_quote_loader():
         if not job_scope:
             job_scope = "comp_load"
 
-        etl_obj.initiate_hendricks_quote_load(job_scope=job_scope)
+        etl_obj.initiate_hendricks_quote_load()
 
         if live_load:
             load_type = "live"
