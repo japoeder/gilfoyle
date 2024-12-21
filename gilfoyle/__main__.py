@@ -175,7 +175,7 @@ def etl_news_loader():
         if not sources:
             sources = ["fmp"]
 
-        results = etl_obj.initiate_hendricks_news_load(job_scope=job_scope)
+        results = etl_obj.initiate_hendricks_news_load()
 
         if live_load:
             load_type = "live"

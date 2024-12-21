@@ -52,13 +52,9 @@ class RunEtl:
         for source in self.sources:
             try:
                 if self.live_load:
-                    hendricks_live_news_loader(
-                        job_scope=self.job_scope, sources=self.sources
-                    )
+                    hendricks_live_news_loader(job_scope=self.job_scope, sources=source)
                 elif self.historical_load:
-                    hendricks_hist_news_loader(
-                        job_scope=self.job_scope, sources=self.sources
-                    )
+                    hendricks_hist_news_loader(job_scope=self.job_scope, sources=source)
                 successful_sources.append(source)
             except:
                 failed_sources.append(source)
