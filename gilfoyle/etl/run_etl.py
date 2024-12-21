@@ -45,9 +45,25 @@ class RunEtl:
         Initiate the Hendricks news loader.
         """
         print("Initiating Hendricks news loader...")
-        if self.live_load:
-            hendricks_live_news_loader(job_scope=self.job_scope, sources=self.sources)
-        elif self.historical_load:
-            hendricks_hist_news_loader(job_scope=self.job_scope, sources=self.sources)
 
-        return None
+        successful_sources = []
+        failed_sources = []
+
+        for source in self.sources:
+            try:
+                if self.live_load:
+                    hendricks_live_news_loader(
+                        job_scope=self.job_scope, sources=self.sources
+                    )
+                elif self.historical_load:
+                    hendricks_hist_news_loader(
+                        job_scope=self.job_scope, sources=self.sources
+                    )
+                successful_sources.append(source)
+            except:
+                failed_sources.append(source)
+
+        return {
+            "successful_sources": successful_sources,
+            "failed_sources": failed_sources,
+        }

@@ -163,6 +163,7 @@ def etl_news_loader():
         historical_load = data.get("historical_load")
         job_scope = data.get("job_scope")
         sources = data.get("sources")
+        logging.info(f"Passing sources: {sources}")
         etl_obj = RunEtl(
             live_load=live_load,
             historical_load=historical_load,
@@ -174,15 +175,7 @@ def etl_news_loader():
         if not sources:
             sources = ["fmp"]
 
-        successful_sources = []
-        failed_sources = []
-
-        for source in sources:
-            try:
-                etl_obj.initiate_hendricks_news_load(job_scope=job_scope, source=source)
-                successful_sources.append(source)
-            except Exception:
-                failed_sources.append(source)
+        results = etl_obj.initiate_hendricks_news_load(job_scope=job_scope)
 
         if live_load:
             load_type = "live"
@@ -193,8 +186,8 @@ def etl_news_loader():
             jsonify(
                 {
                     "status": f"Hendricks news loader completed for {load_type} load.",
-                    "successful_sources": successful_sources,
-                    "failed_sources": failed_sources,
+                    "successful_sources": results["successful_sources"],
+                    "failed_sources": results["failed_sources"],
                 }
             ),
             202,
