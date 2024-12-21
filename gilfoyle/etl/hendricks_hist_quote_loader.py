@@ -5,6 +5,7 @@ import os
 import sys
 import json
 from datetime import datetime, timedelta
+import logging
 import requests
 
 # Add the parent directory to sys.path
@@ -23,6 +24,9 @@ def hendricks_hist_quote_loader(job_scope: str = "complete"):
     """
     Data loader for historical quotes from Hendricks
     """
+    # Send to logging that we are starting the historical quote loader
+    logging.info("Starting Hendricks historical quote loader method...")
+
     # Check if API key is set
     creds_path = get_path("creds")
     QT_HENDRICKS_API_KEY = load_credentials(creds_path, "hendricks_api")[0]

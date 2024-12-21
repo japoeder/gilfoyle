@@ -1,7 +1,7 @@
 """
 Run ETL processes.
 """
-
+import logging
 from gilfoyle.etl.hendricks_hist_quote_loader import hendricks_hist_quote_loader
 from gilfoyle.etl.hendricks_live_quote_loader import hendricks_live_quote_loader
 from gilfoyle.etl.hendricks_hist_news_loader import hendricks_hist_news_loader
@@ -24,6 +24,9 @@ class RunEtl:
         self.historical_load = historical_load
         self.job_scope = job_scope
         self.sources = sources
+
+        # Send to logging that we are starting the live news loader
+        logging.info("Instantiating Hendricks ETL class...")
 
     def initiate_hendricks_quote_load(self):
         """

@@ -5,6 +5,7 @@ import os
 import sys
 import json
 from datetime import datetime
+import logging
 import requests
 
 # Add the parent directory to sys.path
@@ -18,6 +19,9 @@ def hendricks_hist_news_loader(job_scope: str = "comp_load", sources: str = None
     """
     Load historical news data for the tickers in the job_ctrl file.
     """
+    # Send to logging that we are starting the historical news loader
+    logging.info("Starting Hendricks historical news loader method...")
+
     # Check if API key is set
     creds_path = get_path("creds")
     QT_HENDRICKS_API_KEY = load_credentials(creds_path, "hendricks_api")[0]
