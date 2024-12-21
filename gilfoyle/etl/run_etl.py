@@ -50,6 +50,7 @@ class RunEtl:
         failed_sources = []
 
         for source in self.sources:
+            source = [source]
             try:
                 if self.live_load:
                     hendricks_live_news_loader(job_scope=self.job_scope, sources=source)

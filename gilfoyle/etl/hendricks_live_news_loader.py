@@ -15,7 +15,7 @@ from gilfoyle._utils.get_path import get_path
 from gilfoyle._utils.load_credentials import load_credentials
 
 
-def hendricks_live_news_loader(job_scope: str = "comp_load", sources: str = None):
+def hendricks_live_news_loader(job_scope: str = "comp_load", sources: list = None):
     """
     Load live news data for the tickers in the job_ctrl file.
     """
