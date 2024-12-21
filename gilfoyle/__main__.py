@@ -161,19 +161,24 @@ def etl_news_loader():
         data = request.json
         live_load = data.get("live_load")
         historical_load = data.get("historical_load")
+
         job_scope = data.get("job_scope")
+        if not job_scope:
+            job_scope = "comp_load"
+
         sources = data.get("sources")
+        if not sources:
+            sources = ["fmp"]
+        else:
+            sources = sources.split(",")
         logging.info(f"Passing sources: {sources}")
+
         etl_obj = RunEtl(
             live_load=live_load,
             historical_load=historical_load,
             job_scope=job_scope,
             sources=sources,
         )
-        if not job_scope:
-            job_scope = "comp_load"
-        if not sources:
-            sources = ["fmp"]
 
         results = etl_obj.initiate_hendricks_news_load()
 

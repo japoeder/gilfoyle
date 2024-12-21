@@ -4,8 +4,7 @@ Data loader for Hendricks live quote data.
 import os
 import sys
 import json
-
-# from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 import requests
 
@@ -42,17 +41,17 @@ def hendricks_live_news_loader(job_scope: str = "comp_load", sources: str = None
 
     # Set the current date
     # TODO: Need to go through every timestamp and make sure it's in UTC
-    # Start from day before today
-    # current_date = (datetime.now() - timedelta(days=100)).strftime(
-    #     "%Y-%m-%dT00:00:00Z"
-    # )  # Start from the current day
-    # end_date = datetime.now().strftime("%Y-%m-%dT23:59:59Z")  # End of the current day
+    # Start from day
+    current_date = datetime.now().strftime(
+        "%Y-%m-%dT00:00:00Z"
+    )  # Start from the current day
+    end_date = datetime.now().strftime("%Y-%m-%dT23:59:59Z")  # End of the current day
 
     # Prepare the data payload
     data = {
         "tickers": tickers,
-        # "from_date": current_date,
-        # "to_date": end_date,
+        "from_date": current_date,
+        "to_date": end_date,
         "sources": sources,
     }
 
