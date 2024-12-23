@@ -38,10 +38,10 @@ def hendricks_hist_quote_loader(job_scope: str = "complete"):
     job_ctrl_path = get_path("job_ctrl")
     with open(job_ctrl_path, encoding="utf-8") as f:
         data = json.load(f)
-    scope = data[job_scope]  # This should be a list of ticker symbols
+    cur_scope = data[job_scope]  # This should be a list of ticker symbols
 
     # Split tickers into sub-lists of max 3 tickers each
-    ticker_batches = split_tickers(scope)  # Use comp_load directly
+    ticker_batches = split_tickers(cur_scope)  # Use comp_load directly
 
     # Set the end date to yesterday
     end_date = (datetime.now() - timedelta(days=1)).strftime(

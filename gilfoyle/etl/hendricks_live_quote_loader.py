@@ -34,10 +34,10 @@ def hendricks_live_quote_loader(job_scope: str = "comp_load"):
     job_ctrl_path = get_path("job_ctrl")
     with open(job_ctrl_path, "r", encoding="utf-8") as f:
         job = json.load(f)
-    comp_load = job[job_scope]  # This should be a list of ticker symbols
+    cur_scope = job[job_scope]  # This should be a list of ticker symbols
 
     # Split tickers into sub-lists of max 3 tickers each
-    tickers = comp_load  # Use comp_load directly
+    tickers = cur_scope  # Use comp_load directly
 
     # Set the current date
     # TODO: Need to go through every timestamp and make sure it's in UTC

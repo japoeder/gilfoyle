@@ -15,6 +15,11 @@ from gilfoyle._utils.get_path import get_path
 from gilfoyle._utils.load_credentials import load_credentials
 
 
+def split_tickers(tickers, max_size=3):
+    """Split the tickers into sub-lists of a maximum size."""
+    return [tickers[i : i + max_size] for i in range(0, len(tickers), max_size)]
+
+
 def hendricks_hist_news_loader(job_scope: str = "comp_load", sources: str = None):
     """
     Load historical news data for the tickers in the job_ctrl file.
@@ -33,54 +38,71 @@ def hendricks_hist_news_loader(job_scope: str = "comp_load", sources: str = None
     job_ctrl_path = get_path("job_ctrl")
     with open(job_ctrl_path, "r", encoding="utf-8") as f:
         job = json.load(f)
-    comp_load = job[job_scope]  # This should be a list of ticker symbols
+    cur_scope = job[job_scope]  # This should be a list of ticker symbols
 
     # Split tickers into sub-lists of max 3 tickers each
-    tickers = comp_load  # Use comp_load directly
+    # Split tickers into sub-lists of max 3 tickers each
+    ticker_batches = split_tickers(cur_scope)  # Use comp_load directly
 
     # Set the current date
     # TODO: Need to go through every timestamp and make sure it's in UTC
-    # Subtract 10 years from today
-    current_date = (datetime.now() - timedelta(days=3650)).strftime(
-        "%Y-%m-%dT00:00:00Z"
-    )  # Start from the current day
-    end_date = datetime.now().strftime("%Y-%m-%dT23:59:59Z")  # End of the current day
+    # Set the end date to yesterday
+    end_date = (datetime.now() - timedelta(days=1)).strftime(
+        "%Y-%m-%dT23:59:59Z"
+    )  # Start from yesterday
+    cur_yr = int(datetime.strptime(end_date, "%Y-%m-%dT23:59:59Z").year)
 
-    # Prepare the data payload
-    data = {
-        "tickers": tickers,
-        "from_date": current_date,
-        "to_date": end_date,
-        "sources": sources,
-    }
+    for y in (2016, cur_yr + 1):
+        for m in range(1, 13):  # Iterate over each month
+            start_date = (
+                f"{y}-{m:02d}-01T00:00:00Z"  # Start from the first day of the month
+            )
+            if m == 12:
+                loop_ed = f"{y}-12-31T23:59:59Z"  # End of December
+            else:
+                loop_ed = f"{y}-{m + 1:02d}-01T00:00:00Z"  # Start of the next month
 
-    # Define the headers
-    headers = {"Content-Type": "application/json", "x-api-key": QT_HENDRICKS_API_KEY}
+            # Loop through each batch of tickers
+            for ticker_batch in ticker_batches:
+                # Prepare the data payload
+                data_payload = {
+                    "tickers": ticker_batch,
+                    "from_date": start_date,
+                    "to_date": loop_ed,
+                    "collection_name": "rawPriceColl",
+                    "sources": sources,
+                }
 
-    endpoint = "http://localhost:8001/hendricks/load_news"
+                # Define the headers
+                headers = {
+                    "Content-Type": "application/json",
+                    "x-api-key": QT_HENDRICKS_API_KEY,
+                }
 
-    # Send the POST request to the Flask server
-    try:
-        response = requests.post(
-            endpoint,
-            json=data,
-            headers=headers,
-            timeout=6000,
-        )  # 10 seconds timeout
-        response.raise_for_status()  # Raise an error for bad responses (4xx or 5xx)
+                endpoint = "http://localhost:8001/hendricks/load_news"
 
-        # Print the response from the server
-        print("Response Status Code:", response.status_code)
-        print("Response Text:", response.text)
+                # Send the POST request to the Flask server
+                try:
+                    response = requests.post(
+                        endpoint,
+                        json=data_payload,
+                        headers=headers,
+                        timeout=6000,
+                    )  # 10 seconds timeout
+                    response.raise_for_status()  # Raise an error for bad responses (4xx or 5xx)
 
-        # Optionally print the JSON response
-        try:
-            print("JSON Response:", response.json())
-        except ValueError:
-            print("Response is not in JSON format.")
-    except requests.exceptions.HTTPError as err:
-        print(f"HTTP error occurred: {err}")
-    except requests.exceptions.Timeout:
-        print("The request timed out")
-    except requests.exceptions.RequestException as err:
-        print(f"An error occurred: {err}")
+                    # Print the response from the server
+                    print("Response Status Code:", response.status_code)
+                    print("Response Text:", response.text)
+
+                    # Optionally print the JSON response
+                    try:
+                        print("JSON Response:", response.json())
+                    except ValueError:
+                        print("Response is not in JSON format.")
+                except requests.exceptions.HTTPError as err:
+                    print(f"HTTP error occurred: {err}")
+                except requests.exceptions.Timeout:
+                    print("The request timed out")
+                except requests.exceptions.RequestException as err:
+                    print(f"An error occurred: {err}")
