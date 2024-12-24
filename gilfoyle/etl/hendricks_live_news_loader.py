@@ -50,6 +50,7 @@ def hendricks_live_news_loader(job_scope: str = "comp_load", sources: list = Non
     # Prepare the data payload
     data = {
         "tickers": tickers,
+        "collection_name": "rawNewsColl",
         "from_date": current_date,
         "to_date": end_date,
         "sources": sources,
