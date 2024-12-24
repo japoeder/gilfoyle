@@ -70,7 +70,7 @@ def hendricks_hist_news_loader(job_scope: str = "comp_load", sources: str = None
                 "tickers": ticker_batch,
                 "from_date": start_date,
                 "to_date": loop_ed,
-                "collection_name": "rawPriceColl",
+                "collection_name": "rawNewsColl",
                 "sources": sources,
             }
 
