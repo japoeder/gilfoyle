@@ -4,7 +4,7 @@ Data loader for Hendricks live quote data.
 import os
 import sys
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 import requests
 
@@ -20,7 +20,11 @@ def split_tickers(tickers, max_size=3):
     return [tickers[i : i + max_size] for i in range(0, len(tickers), max_size)]
 
 
-def hendricks_hist_news_loader(job_scope: str = "comp_load", sources: str = None):
+def hendricks_hist_news_loader(
+    job_scope: str = "comp_load",
+    sources: str = None,
+    load_year: int = datetime.now().year,
+):
     """
     Load historical news data for the tickers in the job_ctrl file.
     """
@@ -41,27 +45,29 @@ def hendricks_hist_news_loader(job_scope: str = "comp_load", sources: str = None
     cur_scope = job[job_scope]  # This should be a list of ticker symbols
 
     # Set the end date to yesterday and start date to 2016
-    start_date = datetime(2016, 1, 1)
-    end_date = datetime.now() - timedelta(days=1)
-    # end_date = datetime(2016, 12, 31)
+    start_date = datetime(load_year, 1, 1)
+    end_date = datetime(load_year, 12, 31)
 
     print(f"Start date: {start_date}")
     print(f"End date: {end_date}")
 
-    # convert times to 2024-11-01T00:00:00Z format
+    # convert times to ISO format
     start_date = start_date.strftime("%Y-%m-%dT00:00:00Z")
     end_date = end_date.strftime("%Y-%m-%dT23:59:59Z")
 
-    # cur_scope = ['AAPL']
-    # Loop through each batch of tickers
+    # Loop through each ticker
     for ticker in cur_scope:
-        print(f"Ticker: {ticker}")
+        print(f"Processing ticker: {ticker}")
+
+        # Create collection name with ticker prefix
+        collection_name = f"{ticker}_rawNews"
+
         # Prepare the data payload
         data_payload = {
             "tickers": [ticker],
             "from_date": start_date,
             "to_date": end_date,
-            "collection_name": "rawNewsColl",
+            "collection_name": collection_name,
             "sources": sources,
         }
 
@@ -80,21 +86,15 @@ def hendricks_hist_news_loader(job_scope: str = "comp_load", sources: str = None
                 json=data_payload,
                 headers=headers,
                 timeout=6000,
-            )  # 10 seconds timeout
-            response.raise_for_status()  # Raise an error for bad responses (4xx or 5xx)
+            )
+            response.raise_for_status()
 
             # Print the response from the server
-            print("Response Status Code:", response.status_code)
-            print("Response Text:", response.text)
+            print(f"Response Status Code for {ticker}: {response.status_code}")
+            print(f"Response Text for {ticker}: {response.text}")
 
-            # Optionally print the JSON response
-            try:
-                print("JSON Response:", response.json())
-            except ValueError:
-                print("Response is not in JSON format.")
-        except requests.exceptions.HTTPError as err:
-            print(f"HTTP error occurred: {err}")
-        except requests.exceptions.Timeout:
-            print("The request timed out")
-        except requests.exceptions.RequestException as err:
-            print(f"An error occurred: {err}")
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Error processing ticker {ticker}: {str(e)}")
+            continue
+
+    logging.info("Completed Hendricks historical news loader method.")

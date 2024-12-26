@@ -4,7 +4,7 @@ Data loader for historical quotes from Hendricks
 import os
 import sys
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 import requests
 
@@ -20,11 +20,12 @@ def split_tickers(tickers, max_size=3):
     return [tickers[i : i + max_size] for i in range(0, len(tickers), max_size)]
 
 
-def hendricks_hist_quote_loader(job_scope: str = "complete"):
+def hendricks_hist_quote_loader(
+    job_scope: str = "complete", load_year: int = datetime.now().year
+):
     """
     Data loader for historical quotes from Hendricks
     """
-    # Send to logging that we are starting the historical quote loader
     logging.info("Starting Hendricks historical quote loader method...")
 
     # Check if API key is set
@@ -40,27 +41,28 @@ def hendricks_hist_quote_loader(job_scope: str = "complete"):
         data = json.load(f)
     cur_scope = data[job_scope]  # This should be a list of ticker symbols
 
-    # Set the end date to yesterday and start date to 2016
-    start_date = datetime(2016, 1, 1)
-    end_date = datetime.now() - timedelta(days=1)
-    # end_date = datetime(2016, 12, 31)
+    # Set the dates for the specified year
+    start_date = datetime(load_year, 1, 1)
+    end_date = datetime(load_year, 12, 31)
 
     print(f"Start date: {start_date}")
     print(f"End date: {end_date}")
 
-    # convert times to 2024-11-01T00:00:00Z format
+    # Convert times to ISO format
     start_date = start_date.strftime("%Y-%m-%dT00:00:00Z")
     end_date = end_date.strftime("%Y-%m-%dT23:59:59Z")
 
-    # cur_scope = ["AAPL"]
-    # Loop through each batch of tickers
+    # Loop through each ticker
     for ticker in cur_scope:
+        # Create collection name with ticker prefix
+        collection_name = f"{ticker}_rawQuotes"
+
         # Prepare the data payload
         data_payload = {
             "tickers": [ticker],
             "from_date": start_date,
             "to_date": end_date,
-            "collection_name": "rawPriceColl",
+            "collection_name": collection_name,
         }
 
         # Define the headers
@@ -73,27 +75,20 @@ def hendricks_hist_quote_loader(job_scope: str = "complete"):
 
         # Send the POST request to the Flask server
         try:
-            # TODO: Abstract the endpoint
             response = requests.post(
                 endpoint,
                 json=data_payload,
                 headers=headers,
                 timeout=6000,
-            )  # 10 seconds timeout
-            response.raise_for_status()  # Raise an error for bad responses (4xx or 5xx)
+            )
+            response.raise_for_status()
 
             # Print the response from the server
-            print("Response Status Code:", response.status_code)
-            print("Response Text:", response.text)
+            print(f"Response Status Code for {ticker}: {response.status_code}")
+            print(f"Response Text for {ticker}: {response.text}")
 
-            # Optionally print the JSON response
-            try:
-                print("JSON Response:", response.json())
-            except ValueError:
-                print("Response is not in JSON format.")
-        except requests.exceptions.HTTPError as err:
-            print(f"HTTP error occurred: {err}")
-        except requests.exceptions.Timeout:
-            print("The request timed out")
-        except requests.exceptions.RequestException as err:
-            print(f"An error occurred: {err}")
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Error processing ticker {ticker}: {str(e)}")
+            continue
+
+    logging.info("Completed Hendricks historical quote loader method.")

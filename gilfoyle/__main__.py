@@ -7,6 +7,7 @@ import os
 import signal
 import logging
 from functools import wraps
+from datetime import datetime
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 
@@ -123,10 +124,16 @@ def etl_quote_loader():
         live_load = data.get("live_load")
         historical_load = data.get("historical_load")
         job_scope = data.get("job_scope")
+        load_year = data.get("load_year")
+
+        if not load_year:
+            load_year = datetime.now().year
+
         etl_obj = RunEtl(
             live_load=live_load,
             historical_load=historical_load,
             job_scope=job_scope,
+            load_year=load_year,
         )
         if not job_scope:
             job_scope = "comp_load"
@@ -161,6 +168,10 @@ def etl_news_loader():
         data = request.json
         live_load = data.get("live_load")
         historical_load = data.get("historical_load")
+        load_year = data.get("load_year")
+
+        if not load_year:
+            load_year = datetime.now().year
 
         job_scope = data.get("job_scope")
         if not job_scope:
@@ -176,6 +187,7 @@ def etl_news_loader():
             historical_load=historical_load,
             job_scope=job_scope,
             sources=sources,
+            load_year=load_year,
         )
 
         results = etl_obj.initiate_hendricks_news_load()

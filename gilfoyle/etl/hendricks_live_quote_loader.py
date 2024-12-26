@@ -19,8 +19,6 @@ def hendricks_live_quote_loader(job_scope: str = "comp_load"):
     """
     Load live quote data for the tickers in the job_ctrl file.
     """
-
-    # Send to logging that we are starting the live quote loader
     logging.info("Starting Hendricks live quote loader method...")
 
     # Check if API key is set
@@ -36,51 +34,55 @@ def hendricks_live_quote_loader(job_scope: str = "comp_load"):
         job = json.load(f)
     cur_scope = job[job_scope]  # This should be a list of ticker symbols
 
-    # Split tickers into sub-lists of max 3 tickers each
-    tickers = cur_scope  # Use comp_load directly
+    # Set the current date in UTC
+    current_date = datetime.now().strftime("%Y-%m-%dT00:00:00Z")
+    end_date = datetime.now().strftime("%Y-%m-%dT23:59:59Z")
 
-    # Set the current date
-    # TODO: Need to go through every timestamp and make sure it's in UTC
-    current_date = datetime.now().strftime(
-        "%Y-%m-%dT00:00:00Z"
-    )  # Start from the current day
-    end_date = datetime.now().strftime("%Y-%m-%dT23:59:59Z")  # End of the current day
+    # Loop through each ticker
+    for ticker in cur_scope:
+        print(f"Processing ticker: {ticker}")
 
-    # Prepare the data payload
-    data = {
-        "tickers": tickers,
-        "from_date": current_date,
-        "to_date": end_date,
-        "collection_name": "rawPriceColl",
-    }
+        # Create collection name with ticker prefix
+        collection_name = f"{ticker}_rawQuotes"
 
-    # Define the headers
-    headers = {"Content-Type": "application/json", "x-api-key": QT_HENDRICKS_API_KEY}
+        # Prepare the data payload
+        data_payload = {
+            "tickers": [ticker],
+            "from_date": current_date,
+            "to_date": end_date,
+            "collection_name": collection_name,
+        }
 
-    endpoint = "http://localhost:8001/hendricks/load_quotes"
+        # Define the headers
+        headers = {
+            "Content-Type": "application/json",
+            "x-api-key": QT_HENDRICKS_API_KEY,
+        }
 
-    # Send the POST request to the Flask server
-    try:
-        response = requests.post(
-            endpoint,
-            json=data,
-            headers=headers,
-            timeout=6000,
-        )  # 10 seconds timeout
-        response.raise_for_status()  # Raise an error for bad responses (4xx or 5xx)
+        endpoint = "http://localhost:8001/hendricks/load_quotes"
 
-        # Print the response from the server
-        print("Response Status Code:", response.status_code)
-        print("Response Text:", response.text)
-
-        # Optionally print the JSON response
+        # Send the POST request to the Flask server
         try:
-            print("JSON Response:", response.json())
-        except ValueError:
-            print("Response is not in JSON format.")
-    except requests.exceptions.HTTPError as err:
-        print(f"HTTP error occurred: {err}")
-    except requests.exceptions.Timeout:
-        print("The request timed out")
-    except requests.exceptions.RequestException as err:
-        print(f"An error occurred: {err}")
+            response = requests.post(
+                endpoint,
+                json=data_payload,
+                headers=headers,
+                timeout=6000,
+            )
+            response.raise_for_status()
+
+            # Print the response from the server
+            print(f"Response Status Code for {ticker}: {response.status_code}")
+            print(f"Response Text for {ticker}: {response.text}")
+
+            # Log JSON response if available
+            try:
+                print(f"JSON Response for {ticker}:", response.json())
+            except ValueError:
+                print(f"Response for {ticker} is not in JSON format.")
+
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Error processing ticker {ticker}: {str(e)}")
+            continue
+
+    logging.info("Completed Hendricks live quote loader method.")
