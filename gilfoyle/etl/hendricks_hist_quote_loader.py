@@ -79,7 +79,7 @@ def hendricks_hist_quote_loader(
                 endpoint,
                 json=data_payload,
                 headers=headers,
-                timeout=6000,
+                timeout=120000,
             )
             response.raise_for_status()
 
