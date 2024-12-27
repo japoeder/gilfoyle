@@ -24,6 +24,7 @@ from gilfoyle._utils.load_credentials import load_credentials
 
 
 app = Flask(__name__)
+app.config["TIMEOUT"] = 10000
 
 
 def handle_sigterm(*args):
@@ -128,6 +129,8 @@ def etl_quote_loader():
 
         if not load_year:
             load_year = datetime.now().year
+        if not job_scope:
+            job_scope = "comp_load"
 
         etl_obj = RunEtl(
             live_load=live_load,
@@ -135,8 +138,6 @@ def etl_quote_loader():
             job_scope=job_scope,
             load_year=load_year,
         )
-        if not job_scope:
-            job_scope = "comp_load"
 
         etl_obj.initiate_hendricks_quote_load()
 
