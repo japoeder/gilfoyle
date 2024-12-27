@@ -2,7 +2,6 @@
 Run ETL processes.
 """
 import logging
-from datetime import datetime
 
 from gilfoyle.etl.hendricks_hist_quote_loader import hendricks_hist_quote_loader
 from gilfoyle.etl.hendricks_live_quote_loader import hendricks_live_quote_loader
@@ -21,7 +20,7 @@ class RunEtl:
         historical_load: bool = False,
         job_scope: str = "comp_load",
         sources: list = None,
-        load_year: int = datetime.now().year,
+        load_year: int = None,
     ):
         self.live_load = live_load
         self.historical_load = historical_load
@@ -60,7 +59,11 @@ class RunEtl:
                 if self.live_load:
                     hendricks_live_news_loader(job_scope=self.job_scope, sources=source)
                 elif self.historical_load:
-                    hendricks_hist_news_loader(job_scope=self.job_scope, sources=source)
+                    hendricks_hist_news_loader(
+                        job_scope=self.job_scope,
+                        sources=source,
+                        load_year=self.load_year,
+                    )
                 successful_sources.append(source)
             except:
                 failed_sources.append(source)
