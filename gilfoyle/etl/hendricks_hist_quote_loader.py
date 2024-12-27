@@ -6,6 +6,7 @@ import sys
 import json
 from datetime import datetime
 import logging
+import random
 import requests
 
 # Add the parent directory to sys.path
@@ -40,6 +41,9 @@ def hendricks_hist_quote_loader(
     with open(job_ctrl_path, encoding="utf-8") as f:
         data = json.load(f)
     cur_scope = data[job_scope]  # This should be a list of ticker symbols
+
+    # Randomize current scope
+    cur_scope = random.sample(cur_scope, len(cur_scope))
 
     # Set the dates for the specified year
     start_date = datetime(load_year, 1, 1)
