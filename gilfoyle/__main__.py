@@ -170,6 +170,7 @@ def etl_news_loader():
         live_load = data.get("live_load")
         historical_load = data.get("historical_load")
         load_year = data.get("load_year")
+        print(f"load_year: {load_year}")
 
         if not load_year:
             load_year = datetime.now().year
