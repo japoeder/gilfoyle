@@ -62,7 +62,7 @@ def hendricks_hist_news_loader(
 
     # Loop through each ticker
     for ticker in cur_scope:
-        print(f"Processing ticker: {ticker}")
+        logging.info(f"Processing ticker: {ticker}")
 
         # Create ticker-specific GridFS bucket and collection names
         gridfs_bucket = (

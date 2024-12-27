@@ -58,6 +58,7 @@ def hendricks_hist_quote_loader(
 
     # Loop through each ticker
     for ticker in cur_scope:
+        logging.info(f"Processing ticker: {ticker}")
         # Create collection name with ticker prefix
         collection_name = f"{ticker}_rawQuotes"
 
