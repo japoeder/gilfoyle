@@ -27,6 +27,7 @@ def hendricks_hist_news_loader(
 ):
     """
     Load historical news data for the tickers in the job_ctrl file.
+    Uses ticker-specific GridFS buckets for content storage.
     """
     # Send to logging that we are starting the historical news loader
     logging.info("Starting Hendricks historical news loader method...")
@@ -59,15 +60,18 @@ def hendricks_hist_news_loader(
     for ticker in cur_scope:
         print(f"Processing ticker: {ticker}")
 
-        # Create collection name with ticker prefix
-        collection_name = f"{ticker}_rawNews"
+        # Create ticker-specific GridFS bucket and collection names
+        gridfs_bucket = (
+            f"{ticker}_news"  # Will create {ticker}_news.files and {ticker}_news.chunks
+        )
+        metadata_collection = f"{ticker}_rawNews"
 
-        # Prepare the data payload
         data_payload = {
             "tickers": [ticker],
             "from_date": start_date,
             "to_date": end_date,
-            "collection_name": collection_name,
+            "collection_name": metadata_collection,
+            "gridfs_bucket": gridfs_bucket,
             "sources": sources,
         }
 
