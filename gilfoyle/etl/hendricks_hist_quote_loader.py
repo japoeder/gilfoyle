@@ -49,9 +49,6 @@ def hendricks_hist_quote_loader(
     start_date = datetime(load_year, 1, 1)
     end_date = datetime(load_year, 12, 31)
 
-    print(f"Start date: {start_date}")
-    print(f"End date: {end_date}")
-
     # Convert times to ISO format
     start_date = start_date.strftime("%Y-%m-%dT00:00:00Z")
     end_date = end_date.strftime("%Y-%m-%dT23:59:59Z")
@@ -59,6 +56,9 @@ def hendricks_hist_quote_loader(
     # Loop through each ticker
     for ticker in cur_scope:
         logging.info(f"Processing ticker: {ticker}")
+        logging.info(f"Start date: {start_date}")
+        logging.info(f"End date: {end_date}")
+
         # Create collection name with ticker prefix
         collection_name = f"{ticker}_rawQuotes"
 
