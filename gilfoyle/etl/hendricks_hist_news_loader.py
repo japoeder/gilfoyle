@@ -23,7 +23,7 @@ def split_tickers(tickers, max_size=3):
 def hendricks_hist_news_loader(
     job_scope: str = "comp_load",
     sources: str = None,
-    load_year: int = datetime.now().year,
+    load_year: int = None,
 ):
     """
     Load historical news data for the tickers in the job_ctrl file.
