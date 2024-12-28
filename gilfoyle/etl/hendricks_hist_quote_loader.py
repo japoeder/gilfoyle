@@ -3,10 +3,8 @@ Data loader for historical quotes from Hendricks
 """
 import os
 import sys
-import json
 from datetime import datetime
 import logging
-import random
 import requests
 
 # Add the parent directory to sys.path
@@ -36,18 +34,15 @@ def hendricks_hist_quote_loader(
         print("Error: QT_HENDRICKS_API_KEY environment variable is not set.")
         return
 
-    # Get ticker symbols from the JSON file
-    job_ctrl_path = get_path("job_ctrl")
-    with open(job_ctrl_path, encoding="utf-8") as f:
-        data = json.load(f)
-    cur_scope = data[job_scope]  # This should be a list of ticker symbols
-
-    # Randomize current scope
-    cur_scope = random.sample(cur_scope, len(cur_scope))
+    # Ticker and time processing handled by Airflow dags.
+    cur_scope = job_scope
 
     # Set the dates for the specified year
     start_date = datetime(load_year, 1, 1)
     end_date = datetime(load_year, 12, 31)
+
+    print(f"Start date: {start_date}")
+    print(f"End date: {end_date}")
 
     # Convert times to ISO format
     start_date = start_date.strftime("%Y-%m-%dT00:00:00Z")
