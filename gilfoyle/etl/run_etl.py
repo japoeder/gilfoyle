@@ -19,7 +19,7 @@ class RunEtl:
         self,
         live_load: bool = False,
         historical_load: bool = False,
-        job_scope: str = "comp_load",
+        job_scope: str = "full_ticker_set",
         sources: list = None,
         load_year: int = None,
         endpoints: dict = None,

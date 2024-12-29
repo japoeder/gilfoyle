@@ -130,7 +130,7 @@ def etl_quote_loader():
         if not load_year:
             load_year = datetime.now().year
         if not job_scope:
-            job_scope = "comp_load"
+            job_scope = "full_ticker_set"
 
         etl_obj = RunEtl(
             live_load=live_load,
@@ -177,7 +177,7 @@ def etl_news_loader():
 
         job_scope = data.get("job_scope")
         if not job_scope:
-            job_scope = "comp_load"
+            job_scope = "full_ticker_set"
 
         sources = data.get("sources")
         if not sources:
@@ -234,7 +234,7 @@ def etl_fin_data_loader():
         if not load_year:
             load_year = datetime.now().year
         if not job_scope:
-            job_scope = "comp_load"
+            job_scope = "full_ticker_set"
 
         etl_obj = RunEtl(
             live_load=live_load,
