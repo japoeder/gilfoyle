@@ -7,6 +7,7 @@ from gilfoyle.etl.hendricks_hist_quote_loader import hendricks_hist_quote_loader
 from gilfoyle.etl.hendricks_live_quote_loader import hendricks_live_quote_loader
 from gilfoyle.etl.hendricks_hist_news_loader import hendricks_hist_news_loader
 from gilfoyle.etl.hendricks_live_news_loader import hendricks_live_news_loader
+from gilfoyle.etl.hendricks_hist_findata_loader import hendricks_hist_findata_loader
 
 
 class RunEtl:
@@ -21,12 +22,14 @@ class RunEtl:
         job_scope: str = "comp_load",
         sources: list = None,
         load_year: int = None,
+        endpoints: dict = None,
     ):
         self.live_load = live_load
         self.historical_load = historical_load
         self.job_scope = job_scope
         self.sources = sources
         self.load_year = load_year
+        self.endpoints = endpoints
         # Send to logging that we are starting the live news loader
         logging.info("Instantiating Hendricks ETL class...")
 
@@ -72,3 +75,22 @@ class RunEtl:
             "successful_sources": successful_sources,
             "failed_sources": failed_sources,
         }
+
+    def initiate_hendricks_fin_data_load(self):
+        """
+        Initiate the Hendricks financial data loader.
+        """
+        print("Initiating Hendricks financial data loader...")
+        if self.live_load:
+            hendricks_hist_findata_loader(
+                job_scope=self.job_scope, endpoints=self.endpoints, sources=self.sources
+            )
+        elif self.historical_load:
+            hendricks_hist_findata_loader(
+                job_scope=self.job_scope,
+                load_year=self.load_year,
+                endpoints=self.endpoints,
+                sources=self.sources,
+            )
+
+        return None

@@ -217,5 +217,56 @@ def etl_news_loader():
         )
 
 
+@app.route("/gilfoyle/etl_fin_data_loader", methods=["POST"])
+@requires_api_key
+def etl_fin_data_loader():
+    """Endpoint to load a new stock ticker into the database."""
+    try:
+        load_type = None
+        data = request.json
+        live_load = data.get("live_load")
+        historical_load = data.get("historical_load")
+        job_scope = data.get("job_scope")
+        load_year = data.get("load_year")
+        endpoints = data.get("endpoints")
+        sources = data.get("sources")
+
+        if not load_year:
+            load_year = datetime.now().year
+        if not job_scope:
+            job_scope = "comp_load"
+
+        etl_obj = RunEtl(
+            live_load=live_load,
+            historical_load=historical_load,
+            job_scope=job_scope,
+            load_year=load_year,
+            endpoints=endpoints,
+            sources=sources,
+        )
+
+        etl_obj.initiate_hendricks_fin_data_load()
+
+        if live_load:
+            load_type = "live"
+        elif historical_load:
+            load_type = "historical"
+
+        return (
+            jsonify(
+                {
+                    "status": f"Hendricks financial data loader completed for {load_type} load."
+                }
+            ),
+            202,
+        )
+    except Exception as e:
+        logging.error(f"Error: {str(e)}")
+        return (
+            jsonify({"status": "error", "message": str(e)}),
+            500,
+        )
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=8002)
