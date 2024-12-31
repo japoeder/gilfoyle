@@ -230,6 +230,7 @@ def etl_fin_data_loader():
         load_year = data.get("load_year")
         endpoints = data.get("endpoints")
         sources = data.get("sources")
+        daily_flag = data.get("daily_flag")
 
         if not load_year:
             load_year = datetime.now().year
@@ -243,6 +244,7 @@ def etl_fin_data_loader():
             load_year=load_year,
             endpoints=endpoints,
             sources=sources,
+            daily_flag=daily_flag,
         )
 
         etl_obj.initiate_hendricks_fin_data_load()

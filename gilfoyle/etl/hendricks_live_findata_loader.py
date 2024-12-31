@@ -3,7 +3,7 @@ Data loader for Hendricks live quote data.
 """
 import os
 import sys
-
+import json
 from datetime import datetime
 import logging
 import requests
@@ -15,15 +15,9 @@ from gilfoyle._utils.get_path import get_path
 from gilfoyle._utils.load_credentials import load_credentials
 
 
-def split_tickers(tickers, max_size=3):
-    """Split the tickers into sub-lists of a maximum size."""
-    return [tickers[i : i + max_size] for i in range(0, len(tickers), max_size)]
-
-
-def hendricks_hist_findata_loader(
+def hendricks_live_findata_loader(
     job_scope: str = None,
     sources: str = None,
-    load_year: int = None,
     endpoints: dict = None,
     daily_flag: bool = None,
 ):
@@ -31,7 +25,7 @@ def hendricks_hist_findata_loader(
     Load historical financial data for the tickers in the job_ctrl file.
     """
     # Send to logging that we are starting the historical news loader
-    logging.info("Starting Hendricks historical financial data loader method...")
+    logging.info("Starting Hendricks live financial data loader method...")
 
     # Check if API key is set
     creds_path = get_path("creds")
@@ -40,21 +34,17 @@ def hendricks_hist_findata_loader(
         print("Error: QT_HENDRICKS_API_KEY environment variable is not set.")
         return
 
-    # Ticker and time processing handled by Airflow dags.
-    cur_scope = job_scope
+    # Get ticker symbols from the JSON file
+    job_ctrl_path = get_path("job_ctrl")
+    with open(job_ctrl_path, "r", encoding="utf-8") as f:
+        job = json.load(f)
+    cur_scope = job[job_scope]  # This should be a list of ticker symbols
 
-    if daily_flag is True:
-        if load_year is None:
-            load_year = datetime.now().year
+    # Set the current date in UTC
+    current_date = datetime.now().strftime("%Y-%m-%dT00:00:00Z")
+    end_date = datetime.now().strftime("%Y-%m-%dT23:59:59Z")
 
-    start_date = datetime(load_year, 1, 1)
-    end_date = datetime(load_year, 12, 31)
-
-    # convert times to ISO format
-    start_date = start_date.strftime("%Y-%m-%dT00:00:00Z")
-    end_date = end_date.strftime("%Y-%m-%dT23:59:59Z")
-
-    print(f"Start date: {start_date}")
+    print(f"Start date: {current_date}")
     print(f"End date: {end_date}")
 
     # Loop through each ticker
@@ -62,14 +52,14 @@ def hendricks_hist_findata_loader(
         for ep, coll in endpoints.items():
             logging.info(f"Processing ticker: {ticker}")
             logging.info(f"Processing endpoint: {ep}")
-            logging.info(f"Start date: {start_date}")
+            logging.info(f"Start date: {current_date}")
             logging.info(f"End date: {end_date}")
 
             metadata_collection = f"{ticker}_{coll}"
 
             data_payload = {
                 "tickers": [ticker],
-                "from_date": start_date,
+                "from_date": current_date,
                 "to_date": end_date,
                 "collection_name": metadata_collection,
                 "sources": sources,
