@@ -31,7 +31,10 @@ def hendricks_ingestion(
     historical_load: bool = None,
 ):
     """
-    Load data for the tickers in the job_ctrl file.
+    - Load data for the tickers in the job_ctrl file.
+    - Ingesting new sources should have a new endpoint for hendricks service
+        and, if applicable, endpoint details like fmp_endpoints but assigned
+        to a new dict.
     """
     # Send to logging that we are starting the historical news loader
     logging.info(f"Starting Hendricks ETL for {hendricks_endpoint} process...")
@@ -49,6 +52,9 @@ def hendricks_ingestion(
     # Set the start and end dates for the year
     start_date = datetime(load_year, 1, 1)
     end_date = datetime(load_year, 12, 31)
+    if load_year == datetime.now().year:
+        start_date = datetime(load_year, 1, 1)
+        end_date = datetime(load_year, datetime.now().month, datetime.now().day)
 
     # If live load is True, set the start and end dates to the current date
     if live_load is True:
