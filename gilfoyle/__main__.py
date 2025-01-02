@@ -17,7 +17,7 @@ load_dotenv()
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from gilfoyle.etl.ticker_expansion import ticker_expansion
-from gilfoyle.etl.run_etl import RunEtl
+from gilfoyle.etl.run_ingestion import RunIngestion
 from gilfoyle._utils.logging_config import setup_logging
 from gilfoyle._utils.get_path import get_path
 from gilfoyle._utils.load_credentials import load_credentials
@@ -115,9 +115,9 @@ def etl_quote_expansion():
     )
 
 
-@app.route("/gilfoyle/etl_quote_loader", methods=["POST"])
+@app.route("/gilfoyle/run_hendricks_ingestion", methods=["POST"])
 @requires_api_key
-def etl_quote_loader():
+def run_hendricks_ingestion():
     """Endpoint to load a new stock ticker into the database."""
     try:
         load_type = None
@@ -126,20 +126,28 @@ def etl_quote_loader():
         historical_load = data.get("historical_load")
         job_scope = data.get("job_scope")
         load_year = data.get("load_year")
+        sources = data.get("sources")
+        fmp_endpoints = data.get("fmp_endpoints")
+        daily_fmp_flag = data.get("daily_fmp_flag")
+        hendricks_endpoint = data.get("hendricks_endpoint")
 
         if not load_year:
             load_year = datetime.now().year
         if not job_scope:
             job_scope = "full_ticker_set"
 
-        etl_obj = RunEtl(
+        ingestion_obj = RunIngestion(
             live_load=live_load,
             historical_load=historical_load,
             job_scope=job_scope,
             load_year=load_year,
+            sources=sources,
+            fmp_endpoints=fmp_endpoints,
+            daily_fmp_flag=daily_fmp_flag,
+            hendricks_endpoint=hendricks_endpoint,
         )
 
-        etl_obj.initiate_hendricks_quote_load()
+        ingestion_obj.initiate_hendricks_ingestion()
 
         if live_load:
             load_type = "live"
@@ -149,116 +157,6 @@ def etl_quote_loader():
         return (
             jsonify(
                 {"status": f"Hendricks quote loader completed for {load_type} load."}
-            ),
-            202,
-        )
-    except Exception as e:
-        logging.error(f"Error: {str(e)}")
-        return (
-            jsonify({"status": "error", "message": str(e)}),
-            500,
-        )
-
-
-@app.route("/gilfoyle/etl_news_loader", methods=["POST"])
-@requires_api_key
-def etl_news_loader():
-    """Endpoint to load a new stock ticker into the database."""
-    try:
-        load_type = None
-        data = request.json
-        live_load = data.get("live_load")
-        historical_load = data.get("historical_load")
-        load_year = data.get("load_year")
-        print(f"load_year: {load_year}")
-
-        if not load_year:
-            load_year = datetime.now().year
-
-        job_scope = data.get("job_scope")
-        if not job_scope:
-            job_scope = "full_ticker_set"
-
-        sources = data.get("sources")
-        if not sources:
-            sources = ["fmp"]
-        logging.info(f"Passing sources: {sources}")
-
-        etl_obj = RunEtl(
-            live_load=live_load,
-            historical_load=historical_load,
-            job_scope=job_scope,
-            sources=sources,
-            load_year=load_year,
-        )
-
-        results = etl_obj.initiate_hendricks_news_load()
-
-        if live_load:
-            load_type = "live"
-        elif historical_load:
-            load_type = "historical"
-
-        return (
-            jsonify(
-                {
-                    "status": f"Hendricks news loader completed for {load_type} load.",
-                    "successful_sources": results["successful_sources"],
-                    "failed_sources": results["failed_sources"],
-                }
-            ),
-            202,
-        )
-    except Exception as e:
-        logging.error(f"Error: {str(e)}")
-        return (
-            jsonify({"status": "error", "message": str(e)}),
-            500,
-        )
-
-
-@app.route("/gilfoyle/etl_fin_data_loader", methods=["POST"])
-@requires_api_key
-def etl_fin_data_loader():
-    """Endpoint to load a new stock ticker into the database."""
-    try:
-        load_type = None
-        data = request.json
-        live_load = data.get("live_load")
-        historical_load = data.get("historical_load")
-        job_scope = data.get("job_scope")
-        load_year = data.get("load_year")
-        endpoints = data.get("endpoints")
-        sources = data.get("sources")
-        daily_flag = data.get("daily_flag")
-
-        if not load_year:
-            load_year = datetime.now().year
-        if not job_scope:
-            job_scope = "full_ticker_set"
-
-        etl_obj = RunEtl(
-            live_load=live_load,
-            historical_load=historical_load,
-            job_scope=job_scope,
-            load_year=load_year,
-            endpoints=endpoints,
-            sources=sources,
-            daily_flag=daily_flag,
-        )
-
-        etl_obj.initiate_hendricks_fin_data_load()
-
-        if live_load:
-            load_type = "live"
-        elif historical_load:
-            load_type = "historical"
-
-        return (
-            jsonify(
-                {
-                    "status": f"Hendricks financial data loader completed for {load_type} load."
-                }
             ),
             202,
         )

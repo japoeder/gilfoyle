@@ -3,7 +3,7 @@ Data loader for Hendricks live quote data.
 """
 import os
 import sys
-import json
+
 from datetime import datetime
 import logging
 import requests
@@ -15,17 +15,26 @@ from gilfoyle._utils.get_path import get_path
 from gilfoyle._utils.load_credentials import load_credentials
 
 
-def hendricks_live_findata_loader(
+def split_tickers(tickers, max_size=3):
+    """Split the tickers into sub-lists of a maximum size."""
+    return [tickers[i : i + max_size] for i in range(0, len(tickers), max_size)]
+
+
+def hendricks_ingestion(
     job_scope: str = None,
     sources: str = None,
-    endpoints: dict = None,
-    daily_flag: bool = None,
+    load_year: int = datetime.now().year,
+    fmp_endpoints: dict = None,
+    daily_fmp_flag: bool = None,
+    hendricks_endpoint: str = None,
+    live_load: bool = None,
+    historical_load: bool = None,
 ):
     """
-    Load historical financial data for the tickers in the job_ctrl file.
+    Load data for the tickers in the job_ctrl file.
     """
     # Send to logging that we are starting the historical news loader
-    logging.info("Starting Hendricks live financial data loader method...")
+    logging.info(f"Starting Hendricks ETL for {hendricks_endpoint} process...")
 
     # Check if API key is set
     creds_path = get_path("creds")
@@ -34,37 +43,55 @@ def hendricks_live_findata_loader(
         print("Error: QT_HENDRICKS_API_KEY environment variable is not set.")
         return
 
-    # Get ticker symbols from the JSON file
-    job_ctrl_path = get_path("job_ctrl")
-    with open(job_ctrl_path, "r", encoding="utf-8") as f:
-        job = json.load(f)
-    cur_scope = job[job_scope]  # This should be a list of ticker symbols
+    # Ticker and time processing handled by Airflow dags.
+    cur_scope = job_scope
 
-    # Set the current date in UTC
-    current_date = datetime.now().strftime("%Y-%m-%dT00:00:00Z")
-    end_date = datetime.now().strftime("%Y-%m-%dT23:59:59Z")
+    # Set the start and end dates for the year
+    start_date = datetime(load_year, 1, 1)
+    end_date = datetime(load_year, 12, 31)
 
-    print(f"Start date: {current_date}")
+    # If live load is True, set the start and end dates to the current date
+    if live_load is True:
+        start_date = datetime.now()
+        end_date = datetime.now()
+
+    # convert times to ISO format
+    start_date = start_date.strftime("%Y-%m-%dT00:00:00Z")
+    end_date = end_date.strftime("%Y-%m-%dT23:59:59Z")
+
+    print(f"Start date: {start_date}")
     print(f"End date: {end_date}")
 
     # Loop through each ticker
     for ticker in cur_scope:
-        for ep, coll in endpoints.items():
+        if hendricks_endpoint == "load_news":
+            gridfs_bucket = f"{ticker}_news"
+            ep_loop = {"N/A": "rawNews"}
+        elif hendricks_endpoint == "load_quotes":
+            ep_loop = {"N/A": "rawQuotes"}
+            gridfs_bucket = None
+        else:
+            gridfs_bucket = None
+            ep_loop = fmp_endpoints
+
+        for ep, coll in ep_loop.items():
             logging.info(f"Processing ticker: {ticker}")
-            logging.info(f"Processing endpoint: {ep}")
-            logging.info(f"Start date: {current_date}")
+            logging.info(f"Initiating Hendricks endpoint: {hendricks_endpoint}")
+            logging.info(f"Processing fmp endpoint: {ep}")
+            logging.info(f"Start date: {start_date}")
             logging.info(f"End date: {end_date}")
 
             metadata_collection = f"{ticker}_{coll}"
 
             data_payload = {
                 "tickers": [ticker],
-                "from_date": current_date,
+                "from_date": start_date,
                 "to_date": end_date,
                 "collection_name": metadata_collection,
+                "gridfs_bucket": gridfs_bucket,
                 "sources": sources,
-                "endpoint": ep,
-                "daily_flag": daily_flag,
+                "fmp_endpoint": ep,
+                "daily_fmp_flag": daily_fmp_flag,
             }
 
             # Define the headers
@@ -73,7 +100,7 @@ def hendricks_live_findata_loader(
                 "x-api-key": QT_HENDRICKS_API_KEY,
             }
 
-            endpoint = "http://localhost:8001/hendricks/load_fin_data"
+            endpoint = f"http://localhost:8001/hendricks/{hendricks_endpoint}"
 
             # Send the POST request to the Flask server
             try:
@@ -93,4 +120,4 @@ def hendricks_live_findata_loader(
                 logging.error(f"Error processing ticker {ticker}: {str(e)}")
                 continue
 
-        logging.info("Completed running Hendricks historical financial data loader.")
+        logging.info(f"Completed Hendricks ETL for {hendricks_endpoint} process...")
