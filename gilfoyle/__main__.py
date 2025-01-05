@@ -128,8 +128,10 @@ def run_hendricks_ingestion():
         load_year = data.get("load_year")
         sources = data.get("sources")
         fmp_endpoints = data.get("fmp_endpoints")
-        daily_fmp_flag = data.get("daily_fmp_flag")
         hendricks_endpoint = data.get("hendricks_endpoint")
+
+        # Daily flag set to true when pulling from FMP daily.
+        daily_fmp_flag = data.get("daily_fmp_flag")
 
         if not load_year:
             load_year = datetime.now().year
