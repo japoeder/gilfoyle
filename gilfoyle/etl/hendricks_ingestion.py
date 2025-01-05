@@ -106,7 +106,7 @@ def hendricks_ingestion(
                 "x-api-key": QT_HENDRICKS_API_KEY,
             }
 
-            endpoint = f"http://localhost:8701/hendricks/{hendricks_endpoint}"
+            endpoint = f"http://localhost:8711/hendricks/{hendricks_endpoint}"
 
             # Send the POST request to the Flask server
             try:
