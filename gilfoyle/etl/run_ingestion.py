@@ -20,7 +20,7 @@ class RunIngestion:
         hendricks_endpoint: str = None,
         live_load: bool = False,
         historical_load: bool = False,
-        mongo_db: str = None,
+        mongo_db: str = "StocksDB",
     ):
         self.job_scope = job_scope
         self.sources = sources
