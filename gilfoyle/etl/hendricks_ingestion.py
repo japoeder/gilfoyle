@@ -29,6 +29,7 @@ def hendricks_ingestion(
     hendricks_endpoint: str = None,
     live_load: bool = None,
     historical_load: bool = None,
+    mongo_db: str = None,
 ):
     """
     - Load data for the tickers in the job_ctrl file.
@@ -98,6 +99,7 @@ def hendricks_ingestion(
                 "sources": sources,
                 "fmp_endpoint": ep,
                 "daily_fmp_flag": daily_fmp_flag,
+                "mongo_db": mongo_db,
             }
 
             # Define the headers
@@ -127,3 +129,5 @@ def hendricks_ingestion(
                 continue
 
         logging.info(f"Completed Hendricks ETL for {hendricks_endpoint} process...")
+
+    return response.text

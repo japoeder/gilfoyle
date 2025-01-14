@@ -8,6 +8,7 @@ import signal
 import logging
 from functools import wraps
 from datetime import datetime
+import json
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 
@@ -129,6 +130,7 @@ def run_hendricks_ingestion():
         sources = data.get("sources")
         fmp_endpoints = data.get("fmp_endpoints")
         hendricks_endpoint = data.get("hendricks_endpoint")
+        mongo_db = data.get("mongo_db")
 
         # Daily flag set to true when pulling from FMP daily.
         daily_fmp_flag = data.get("daily_fmp_flag")
@@ -137,6 +139,10 @@ def run_hendricks_ingestion():
             load_year = datetime.now().year
         if not job_scope:
             job_scope = "full_ticker_set"
+        if live_load:
+            load_type = "live"
+        elif historical_load:
+            load_type = "historical"
 
         ingestion_obj = RunIngestion(
             live_load=live_load,
@@ -147,18 +153,23 @@ def run_hendricks_ingestion():
             fmp_endpoints=fmp_endpoints,
             daily_fmp_flag=daily_fmp_flag,
             hendricks_endpoint=hendricks_endpoint,
+            mongo_db=mongo_db,
         )
 
-        ingestion_obj.initiate_hendricks_ingestion()
+        response = ingestion_obj.initiate_hendricks_ingestion()
+        json_response = json.loads(response)
 
-        if live_load:
-            load_type = "live"
-        elif historical_load:
-            load_type = "historical"
+        if len(json_response["failed_tickers"]) > 0:
+            status_msg = f"Hendricks ingestion incomplete for {load_type} load."
+        else:
+            status_msg = f"Hendricks ingestion completed for {load_type} load."
 
         return (
             jsonify(
-                {"status": f"Hendricks quote loader completed for {load_type} load."}
+                {
+                    "status": status_msg,
+                    "response": json_response,
+                }
             ),
             202,
         )

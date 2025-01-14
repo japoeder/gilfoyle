@@ -20,6 +20,7 @@ class RunIngestion:
         hendricks_endpoint: str = None,
         live_load: bool = False,
         historical_load: bool = False,
+        mongo_db: str = None,
     ):
         self.job_scope = job_scope
         self.sources = sources
@@ -29,6 +30,7 @@ class RunIngestion:
         self.hendricks_endpoint = hendricks_endpoint
         self.live_load = live_load
         self.historical_load = historical_load
+        self.mongo_db = mongo_db
         # Send to logging that we are starting the live news loader
         logging.info("Instantiating Hendricks loading class...")
 
@@ -37,7 +39,7 @@ class RunIngestion:
         Initiate Hendricks loading process.
         """
         logging.info("Running Hendricks loading process...")
-        hendricks_ingestion(
+        response = hendricks_ingestion(
             job_scope=self.job_scope,
             sources=self.sources,
             load_year=self.load_year,
@@ -46,4 +48,7 @@ class RunIngestion:
             hendricks_endpoint=self.hendricks_endpoint,
             live_load=self.live_load,
             historical_load=self.historical_load,
+            mongo_db=self.mongo_db,
         )
+
+        return response
