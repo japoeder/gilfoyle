@@ -29,7 +29,7 @@ def hendricks_ingestion(
     hendricks_endpoint: str = None,
     live_load: bool = None,
     historical_load: bool = None,
-    mongo_db: str = "StocksDB",
+    mongo_db: str = "stocksDB",
 ):
     """
     - Load data for the tickers in the job_ctrl file.
