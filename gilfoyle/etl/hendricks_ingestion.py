@@ -24,12 +24,14 @@ def hendricks_ingestion(
     job_scope: str = None,
     sources: str = None,
     load_year: int = datetime.now().year,
-    fmp_endpoints: dict = None,
+    target_endpoints: dict = None,
     daily_fmp_flag: bool = None,
     hendricks_endpoint: str = None,
     live_load: bool = None,
     historical_load: bool = None,
-    mongo_db: str = "stocksDB",
+    mongo_db: str = None,
+    reddit_load: bool = None,
+    subreddits: list = None,
 ):
     """
     - Load data for the tickers in the job_ctrl file.
@@ -79,12 +81,12 @@ def hendricks_ingestion(
             gridfs_bucket = None
         else:
             gridfs_bucket = None
-            ep_loop = fmp_endpoints
+            ep_loop = target_endpoints
 
         for ep, coll in ep_loop.items():
             logging.info(f"Processing ticker: {ticker}")
             logging.info(f"Initiating Hendricks endpoint: {hendricks_endpoint}")
-            logging.info(f"Processing fmp endpoint: {ep}")
+            logging.info(f"Processing target endpoint: {ep}")
             logging.info(f"Start date: {start_date}")
             logging.info(f"End date: {end_date}")
 
@@ -97,9 +99,11 @@ def hendricks_ingestion(
                 "collection_name": metadata_collection,
                 "gridfs_bucket": gridfs_bucket,
                 "sources": sources,
-                "fmp_endpoint": ep,
+                "target_endpoint": ep,
                 "daily_fmp_flag": daily_fmp_flag,
                 "mongo_db": mongo_db,
+                "reddit_load": reddit_load,
+                "subreddits": subreddits,
             }
 
             # Define the headers

@@ -128,9 +128,11 @@ def run_hendricks_ingestion():
         job_scope = data.get("job_scope")
         load_year = data.get("load_year")
         sources = data.get("sources")
-        fmp_endpoints = data.get("fmp_endpoints")
+        target_endpoints = data.get("target_endpoints")
         hendricks_endpoint = data.get("hendricks_endpoint")
         mongo_db = data.get("mongo_db")
+        reddit_load = data.get("reddit_load")
+        subreddits = data.get("subreddits")
 
         # Daily flag set to true when pulling from FMP daily.
         daily_fmp_flag = data.get("daily_fmp_flag")
@@ -150,10 +152,12 @@ def run_hendricks_ingestion():
             job_scope=job_scope,
             load_year=load_year,
             sources=sources,
-            fmp_endpoints=fmp_endpoints,
+            target_endpoints=target_endpoints,
             daily_fmp_flag=daily_fmp_flag,
             hendricks_endpoint=hendricks_endpoint,
             mongo_db=mongo_db,
+            reddit_load=reddit_load,
+            subreddits=subreddits,
         )
 
         response = ingestion_obj.initiate_hendricks_ingestion()
