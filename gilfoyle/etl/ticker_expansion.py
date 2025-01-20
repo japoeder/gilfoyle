@@ -6,10 +6,12 @@ import os
 from datetime import datetime, timedelta, timezone
 import json
 
-from gilfoyle._utils.mongo_conn import mongo_conn
+from quantum_trade_utilities.data.mongo_conn import mongo_conn
 
-# from gilfoyle._utils.load_credentials import load_credentials
-from gilfoyle._utils.mongo_coll_verification import confirm_mongo_collect_exists
+# from quantum_trade_utilities.data.load_credentials import load_credentials
+from quantum_trade_utilities.data.mongo_coll_verification import (
+    confirm_mongo_collect_exists,
+)
 
 
 def ticker_expansion():

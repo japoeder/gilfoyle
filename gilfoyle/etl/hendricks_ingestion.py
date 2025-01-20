@@ -11,8 +11,8 @@ import requests
 # Add the parent directory to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from gilfoyle._utils.get_path import get_path
-from gilfoyle._utils.load_credentials import load_credentials
+from quantum_trade_utilities.core.get_path import get_path
+from quantum_trade_utilities.data.load_credentials import load_credentials
 
 
 def split_tickers(tickers, max_size=3):

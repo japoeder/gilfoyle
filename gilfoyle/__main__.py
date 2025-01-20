@@ -14,14 +14,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from quantum_trade_utilities.io.logging_config import setup_logging
+from quantum_trade_utilities.core.get_path import get_path
+from quantum_trade_utilities.data.load_credentials import load_credentials
+
 # Add the parent directory to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from gilfoyle.etl.ticker_expansion import ticker_expansion
 from gilfoyle.etl.run_ingestion import RunIngestion
-from gilfoyle._utils.logging_config import setup_logging
-from gilfoyle._utils.get_path import get_path
-from gilfoyle._utils.load_credentials import load_credentials
 
 
 app = Flask(__name__)
