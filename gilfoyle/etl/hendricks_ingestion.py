@@ -32,6 +32,7 @@ def hendricks_ingestion(
     mongo_db: str = None,
     reddit_load: bool = None,
     subreddits: list = None,
+    keywords: list = None,
 ):
     """
     - Load data for the tickers in the job_ctrl file.
@@ -104,6 +105,7 @@ def hendricks_ingestion(
                 "mongo_db": mongo_db,
                 "reddit_load": reddit_load,
                 "subreddits": subreddits,
+                "keywords": keywords,
             }
 
             # Define the headers

@@ -23,6 +23,7 @@ class RunIngestion:
         mongo_db: str = None,
         reddit_load: bool = False,
         subreddits: list = None,
+        keywords: list = None,
     ):
         self.job_scope = job_scope
         self.sources = sources
@@ -35,6 +36,7 @@ class RunIngestion:
         self.mongo_db = mongo_db
         self.reddit_load = reddit_load
         self.subreddits = subreddits
+        self.keywords = keywords
         # Send to logging that we are starting the live news loader
         logging.info("Instantiating Hendricks loading class...")
 
@@ -55,6 +57,7 @@ class RunIngestion:
             mongo_db=self.mongo_db,
             reddit_load=self.reddit_load,
             subreddits=self.subreddits,
+            keywords=self.keywords,
         )
 
         return response

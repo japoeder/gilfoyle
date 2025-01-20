@@ -133,6 +133,7 @@ def run_hendricks_ingestion():
         mongo_db = data.get("mongo_db")
         reddit_load = data.get("reddit_load")
         subreddits = data.get("subreddits")
+        keywords = data.get("keywords")
 
         # Daily flag set to true when pulling from FMP daily.
         daily_fmp_flag = data.get("daily_fmp_flag")
@@ -158,6 +159,7 @@ def run_hendricks_ingestion():
             mongo_db=mongo_db,
             reddit_load=reddit_load,
             subreddits=subreddits,
+            keywords=keywords,
         )
 
         response = ingestion_obj.initiate_hendricks_ingestion()
