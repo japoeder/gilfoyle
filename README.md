@@ -10,8 +10,6 @@
 
 A robust MLOps service for real-time orchestration of ETL, RAG, Deep Learning, etc. workflows.
 
-# ***NEED TO UPDATE BELOW THIS LINE***
-
 ## 📋 Table of Contents
 
 - [Gilfoyle 🚀](#gilfoyle-)
