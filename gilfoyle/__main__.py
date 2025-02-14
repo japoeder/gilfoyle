@@ -98,7 +98,6 @@ def requires_api_key(f):
     return decorated
 
 
-# TODO: update to return meta data in response (can prob. use timestame to control)
 @app.route("/gilfoyle/etl_quote_expansion", methods=["POST"])
 @requires_api_key
 def etl_quote_expansion():
