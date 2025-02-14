@@ -21,7 +21,6 @@ from quantum_trade_utilities.data.load_credentials import load_credentials
 # Add the parent directory to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from gilfoyle.etl.ticker_expansion import ticker_expansion
 from gilfoyle.etl.run_ingestion import RunIngestion
 
 
@@ -96,24 +95,6 @@ def requires_api_key(f):
             )
 
     return decorated
-
-
-@app.route("/gilfoyle/etl_quote_expansion", methods=["POST"])
-@requires_api_key
-def etl_quote_expansion():
-    """Endpoint to load a new stock ticker into the database."""
-    data = request.json
-    ticker_symbol = data.get("ticker_symbol")
-    collection_name = data.get("collection_name", "rawPriceColl")
-    ticker_expansion()
-    return (
-        jsonify(
-            {
-                "status": f"{ticker_symbol} dataframe loaded into {collection_name} collection."
-            }
-        ),
-        202,
-    )
 
 
 @app.route("/gilfoyle/run_hendricks_ingestion", methods=["POST"])
