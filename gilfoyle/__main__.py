@@ -22,7 +22,7 @@ from quantum_trade_utilities.data.load_credentials import load_credentials
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from gilfoyle.etl.run_ingestion import RunIngestion
-
+from gilfoyle.etl.run_llm_procs import RunLLMProcs
 
 app = Flask(__name__)
 app.config["TIMEOUT"] = 10000
@@ -150,6 +150,69 @@ def run_hendricks_ingestion():
             status_msg = f"Hendricks ingestion incomplete for {load_type} load."
         else:
             status_msg = f"Hendricks ingestion completed for {load_type} load."
+
+        return (
+            jsonify(
+                {
+                    "status": status_msg,
+                    "response": json_response,
+                }
+            ),
+            202,
+        )
+    except Exception as e:
+        logging.error(f"Error: {str(e)}")
+        return (
+            jsonify({"status": "error", "message": str(e)}),
+            500,
+        )
+
+
+@app.route("/gilfoyle/run_llm_embeddings", methods=["POST"])
+@requires_api_key
+def run_llm_embeddings():
+    """Endpoint to load a new stock ticker into the database."""
+    # source: file, social, findat, news
+    # source_type: pdf, reddit, earnCalls, rawNews
+    try:
+        load_type = None
+        data = request.json
+        live_load = data.get("live_load")
+        historical_load = data.get("historical_load")
+        job_scope = data.get("job_scope")
+        load_year = data.get("load_year")
+        source = data.get("source")
+        source_type = data.get("source_type")
+        bachman_endpoint = data.get("bachman_endpoint")
+        mongo_db = data.get("mongo_db")
+
+        if not load_year:
+            load_year = datetime.now().year
+        if not job_scope:
+            job_scope = "full_ticker_set"
+        if live_load:
+            load_type = "live"
+        elif historical_load:
+            load_type = "historical"
+
+        llm_procs_obj = RunLLMProcs(
+            live_load=live_load,
+            historical_load=historical_load,
+            job_scope=job_scope,
+            load_year=load_year,
+            source=source,
+            source_type=source_type,
+            bachman_endpoint=bachman_endpoint,
+            mongo_db=mongo_db,
+        )
+
+        response = llm_procs_obj.initiate_bachman_embeddings()
+        json_response = json.loads(response)
+
+        if len(json_response["failed_tickers"]) > 0:
+            status_msg = f"LLM processes incomplete for {load_type} load."
+        else:
+            status_msg = f"LLM processes completed for {load_type} load."
 
         return (
             jsonify(
