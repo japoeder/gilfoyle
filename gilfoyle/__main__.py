@@ -175,7 +175,7 @@ def run_llm_embeddings():
     # source: file, social, findat, news
     # source_type: pdf, reddit, earnCalls, rawNews
     try:
-        load_type = None
+        # load_type = None
         data = request.json
         live_load = data.get("live_load")
         historical_load = data.get("historical_load")
@@ -192,13 +192,13 @@ def run_llm_embeddings():
             load_year = datetime.now().year
         if not job_scope:
             job_scope = "full_ticker_set"
-        if live_load:
-            load_type = "live"
-        elif historical_load:
-            load_type = "historical"
+        # if live_load:
+        #     load_type = "live"
+        # elif historical_load:
+        #     load_type = "historical"
 
-        if source == "file":
-            load_type = "file"
+        # if source == "file":
+        #     load_type = "file"
 
         llm_procs_obj = RunLLMProcs(
             live_load=live_load,
@@ -212,22 +212,10 @@ def run_llm_embeddings():
         )
 
         response = llm_procs_obj.initiate_bachman_embeddings()
-        print(response)
         json_response = json.loads(str(response))
-        print(json_response)
-
-        if len(json_response["failed_tickers"]) > 0:
-            status_msg = f"LLM processes incomplete for {load_type} load."
-        else:
-            status_msg = f"LLM processes completed for {load_type} load."
 
         return (
-            jsonify(
-                {
-                    "status": status_msg,
-                    "response": json_response,
-                }
-            ),
+            jsonify(json_response),
             202,
         )
     except Exception as e:

@@ -159,7 +159,6 @@ def file_embeddings(
     text = {
         "status": "success",
         "message": "File embeddings process completed successfully.",
-        "failed_tickers": [],
     }
     response = ResponseObj(text=json.dumps(text))
 
