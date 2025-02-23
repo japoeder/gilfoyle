@@ -20,7 +20,7 @@ def split_tickers(tickers, max_size=3):
     return [tickers[i : i + max_size] for i in range(0, len(tickers), max_size)]
 
 
-def bachman_embeddings(
+def social_embeddings(
     job_scope: str = None,
     sources: str = None,
     load_year: int = datetime.now().year,

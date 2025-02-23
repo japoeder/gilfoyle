@@ -179,12 +179,14 @@ def run_llm_embeddings():
         data = request.json
         live_load = data.get("live_load")
         historical_load = data.get("historical_load")
-        job_scope = data.get("job_scope")
+        job_scope = data.get("job_scope")  # Ticker
         load_year = data.get("load_year")
-        source = data.get("source")
-        source_type = data.get("source_type")
-        bachman_endpoint = data.get("bachman_endpoint")
-        mongo_db = data.get("mongo_db")
+        source = data.get("source")  # ctrl gilfoyle flow (file, social, gentext)
+        doc_type = data.get(
+            "doc_type"
+        )  # pass to bachman (financial_document, reddit_content, earnings_transcript, news_article)
+        entity_type = data.get("entity_type")  # pass to bachman (org, person, product)
+        device = data.get("device")  # pass to bachman (cpu, gpu)
 
         if not load_year:
             load_year = datetime.now().year
@@ -195,19 +197,24 @@ def run_llm_embeddings():
         elif historical_load:
             load_type = "historical"
 
+        if source == "file":
+            load_type = "file"
+
         llm_procs_obj = RunLLMProcs(
             live_load=live_load,
             historical_load=historical_load,
             job_scope=job_scope,
             load_year=load_year,
             source=source,
-            source_type=source_type,
-            bachman_endpoint=bachman_endpoint,
-            mongo_db=mongo_db,
+            doc_type=doc_type,
+            entity_type=entity_type,
+            device=device,
         )
 
         response = llm_procs_obj.initiate_bachman_embeddings()
-        json_response = json.loads(response)
+        print(response)
+        json_response = json.loads(str(response))
+        print(json_response)
 
         if len(json_response["failed_tickers"]) > 0:
             status_msg = f"LLM processes incomplete for {load_type} load."
