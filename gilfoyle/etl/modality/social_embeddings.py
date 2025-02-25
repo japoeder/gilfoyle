@@ -1,139 +1,213 @@
 """
-Data loader for Hendricks live quote data.
+Data loader for social media content embeddings.
 """
 import os
 import sys
-
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import logging
-import requests
+import json
+
+# import requests
+from pymongo import MongoClient
 
 # Add the parent directory to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from quantum_trade_utilities.core.get_path import get_path
 from quantum_trade_utilities.data.load_credentials import load_credentials
+from quantum_trade_utilities.data.mongo_conn import mongo_conn
+from quantum_trade_utilities.data.mongo_coll_verification import (
+    confirm_mongo_collect_exists,
+)
+
+# Set up logging
+logging.basicConfig(level=logging.WARNING)  # Set to WARNING to suppress DEBUG messages
+logger = logging.getLogger("pymongo")
+logger.setLevel(logging.WARNING)  # Suppress pymongo debug messages
 
 
-def split_tickers(tickers, max_size=3):
-    """Split the tickers into sub-lists of a maximum size."""
-    return [tickers[i : i + max_size] for i in range(0, len(tickers), max_size)]
+class ResponseObj:
+    """Response object for the social embeddings process."""
+
+    def __init__(self, text: dict):
+        self.text = text
+
+
+def get_mongo_connection():
+    """Establish MongoDB connection using credentials."""
+    creds_path = get_path("creds")
+    mongo_creds = load_credentials(creds_path, "mongodb")
+    client = MongoClient(
+        mongo_creds[0]
+    )  # Assuming the connection string is first credential
+    return client
+
+
+def process_content(post_data, comments_data):
+    """Process post and comments as separate content items."""
+    content_items = []
+
+    # Process post if it has content
+    if post_data.get("title") or post_data.get("selftext"):
+        post_text = f"Title: {post_data.get('title', '')}\n\nContent: {post_data.get('selftext', '')}".strip()
+        if post_text:
+            content_items.append(
+                {
+                    "text": post_text,
+                    "type": "post",
+                    "id": post_data.get("unique_id"),
+                    "timestamp": post_data.get("timestamp"),
+                }
+            )
+
+    # Process comments
+    filtered_comments = [
+        comment
+        for comment in comments_data
+        if abs(comment.get("score", 0)) >= 0  # Adjust score threshold as needed
+    ]
+
+    # Sort comments by depth
+    sorted_comments = sorted(filtered_comments, key=lambda x: x.get("depth", 0))
+
+    # Process each comment separately
+    for comment in sorted_comments:
+        comment_text = comment.get("body", "").strip()
+        if comment_text:
+            content_items.append(
+                {
+                    "text": f"Comment (depth {comment.get('depth', 0)}): {comment_text}",
+                    "type": "comment",
+                    "id": comment.get("unique_id"),
+                    "post_id": post_data.get("unique_id"),
+                    "timestamp": comment.get("timestamp"),
+                    "depth": comment.get("depth", 0),
+                }
+            )
+
+    return content_items if content_items else None
 
 
 def social_embeddings(
-    job_scope: str = None,
-    sources: str = None,
-    load_year: int = datetime.now().year,
-    target_endpoints: dict = None,
-    daily_fmp_flag: bool = None,
-    hendricks_endpoint: str = None,
-    live_load: bool = None,
-    historical_load: bool = None,
-    mongo_db: str = None,
-    reddit_load: bool = None,
-    subreddits: list = None,
-    keywords: list = None,
+    job_scope: str = "live",  # 'live' or 'historical'
+    mongo_db: str = "socialDB",
+    source: str = "social",
+    doc_type: str = "reddit_content",
+    entity_type: str = "org",
+    device: str = "cpu",
 ):
-    """
-    - Load data for the tickers in the job_ctrl file.
-    - Ingesting new sources should have a new endpoint for hendricks service
-        and, if applicable, endpoint details like fmp_endpoints but assigned
-        to a new dict.
-    """
-    # Send to logging that we are starting the historical news loader
-    logging.info(f"Starting Hendricks ETL for {hendricks_endpoint} process...")
+    """Process social media content for embeddings."""
+    logging.info("Starting social embeddings process...")
 
-    # Check if API key is set
+    # Get the database connection
+    db = mongo_conn(mongo_db=mongo_db)
+
+    # Get credentials and connection
     creds_path = get_path("creds")
-    QT_HENDRICKS_API_KEY = load_credentials(creds_path, "hendricks_api")[0]
-    if QT_HENDRICKS_API_KEY is None:
-        print("Error: QT_HENDRICKS_API_KEY environment variable is not set.")
-        return
+    QT_BACHMAN_API_KEY = load_credentials(creds_path, "bachman_api")[0]
+    if not QT_BACHMAN_API_KEY:
+        logging.error("Bachman API key not found")
+        return None
 
-    # Ticker and time processing handled by Airflow dags.
-    cur_scope = job_scope
+    for ticker in job_scope:
+        # Get the collection name
+        posts_collection_ref = f"{ticker}_redditPosts"
+        comments_collection_ref = f"{ticker}_redditComments"
+        embedded_collection_ref = f"{ticker}_redditEmbedded"
 
-    # Set the start and end dates for the year
-    start_date = datetime(load_year, 1, 1)
-    end_date = datetime(load_year, 12, 31)
-    if load_year == datetime.now().year:
-        start_date = datetime(load_year, 1, 1)
-        end_date = datetime(load_year, datetime.now().month, datetime.now().day)
+        # Ensure the collection exists
+        confirm_mongo_collect_exists(posts_collection_ref, mongo_db)
+        confirm_mongo_collect_exists(comments_collection_ref, mongo_db)
+        confirm_mongo_collect_exists(embedded_collection_ref, mongo_db)
 
-    # If live load is True, set the start and end dates to the current date
-    if live_load is True:
-        start_date = datetime.now()
-        end_date = datetime.now()
+        # Get the collection
+        posts_collection = db[posts_collection_ref]
+        comments_collection = db[comments_collection_ref]
+        embedded_collection = db[embedded_collection_ref]
 
-    # convert times to ISO format
-    start_date = start_date.strftime("%Y-%m-%dT00:00:00Z")
-    end_date = end_date.strftime("%Y-%m-%dT23:59:59Z")
+        current_timestamp = datetime.now(timezone.utc)
 
-    print(f"Start date: {start_date}")
-    print(f"End date: {end_date}")
+        # Define time filter based on job scope
+        time_filter = (
+            {"timestamp": {"$gte": current_timestamp - timedelta(hours=1)}}
+            if job_scope == "live"
+            else {}
+        )
 
-    # Loop through each ticker
-    for ticker in cur_scope:
-        if hendricks_endpoint == "load_news":
-            gridfs_bucket = f"{ticker}_news"
-            ep_loop = {"N/A": "rawNews"}
-        elif hendricks_endpoint == "load_quotes":
-            ep_loop = {"N/A": "rawQuotes"}
-            gridfs_bucket = None
-        else:
-            gridfs_bucket = None
-            ep_loop = target_endpoints
-
-        for ep, coll in ep_loop.items():
-            logging.info(f"Processing ticker: {ticker}")
-            logging.info(f"Initiating Hendricks endpoint: {hendricks_endpoint}")
-            logging.info(f"Processing target endpoint: {ep}")
-            logging.info(f"Start date: {start_date}")
-            logging.info(f"End date: {end_date}")
-
-            metadata_collection = f"{ticker}_{coll}"
-
-            data_payload = {
-                "tickers": [ticker],
-                "from_date": start_date,
-                "to_date": end_date,
-                "collection_name": metadata_collection,
-                "gridfs_bucket": gridfs_bucket,
-                "sources": sources,
-                "target_endpoint": ep,
-                "daily_fmp_flag": daily_fmp_flag,
-                "mongo_db": mongo_db,
-                "reddit_load": reddit_load,
-                "subreddits": subreddits,
-                "keywords": keywords,
+        # Get posts that haven't been processed
+        posts_cursor = posts_collection.find(
+            {
+                **time_filter,
+                "unique_id": {"$nin": list(embedded_collection.distinct("post_id"))},
             }
+        )
 
-            # Define the headers
-            headers = {
-                "Content-Type": "application/json",
-                "x-api-key": QT_HENDRICKS_API_KEY,
-            }
+        for post in posts_cursor:
+            # Get related comments
+            comments = list(
+                comments_collection.find({"post_UID": post["unique_id"], **time_filter})
+            )
 
-            endpoint = f"http://127.0.0.1:8711/hendricks/{hendricks_endpoint}"
-
-            # Send the POST request to the Flask server
-            try:
-                response = requests.post(
-                    endpoint,
-                    json=data_payload,
-                    headers=headers,
-                    timeout=120000,
-                )
-                response.raise_for_status()
-
-                # Print the response from the server
-                print(f"Response Status Code for {ticker}: {response.status_code}")
-                print(f"Response Text for {ticker}: {response.text}")
-
-            except requests.exceptions.RequestException as e:
-                logging.error(f"Error processing ticker {ticker}: {str(e)}")
+            # Process content
+            content_items = process_content(post, comments)
+            if not content_items:
                 continue
 
-        logging.info(f"Completed Hendricks ETL for {hendricks_endpoint} process...")
+            # # Process each content item separately
+            # for item in content_items:
+            #     data_payload = {
+            #         "text": item['text'],
+            #         "collection_name": "social_content_v1",
+            #         "skip_if_exists": True,
+            #         "metadata": {
+            #             "embedding_config": {
+            #                 "vectorstore": {
+            #                     "provider": "huggingface",
+            #                     "model": "BAAI/bge-large-en-v1.5"
+            #                 },
+            #                 "device": "cpu"
+            #             },
+            #             "source": "reddit",
+            #             "doc_id": item['id'],
+            #             "parent_id": item.get('post_id'),  # Only present for comments
+            #             "content_type": item['type'],
+            #             "doc_type": "reddit_content",
+            #             "ticker": ticker,
+            #             "e_type": "org",
+            #             "timestamp": current_timestamp.isoformat(),
+            #             "content_timestamp": item['timestamp'].isoformat(),
+            #             "depth": item.get('depth')  # Only present for comments
+            #         }
+            #     }
 
-    return response.text
+            #     try:
+            #         response = requests.post(
+            #             "http://127.0.0.1:8713/bachman/process_text",
+            #             json=data_payload,
+            #             headers={
+            #                 "Content-Type": "application/json",
+            #                 "x-api-key": QT_BACHMAN_API_KEY
+            #             },
+            #             timeout=120000
+            #         )
+            #         response.raise_for_status()
+
+            #         # Record successful embedding only for posts
+            #         if item['type'] == 'post':
+            #             embedded_collection.insert_one({
+            #                 "post_id": item['id'],
+            #                 "embedded_at": current_timestamp,
+            #                 "post_timestamp": item['timestamp']
+            #             })
+
+            #         logging.info(f"Successfully processed {item['type']} {item['id']} for {ticker}")
+
+            #     except requests.exceptions.RequestException as e:
+            #         logging.error(f"Error processing {item['type']} {item['id']} for {ticker}: {str(e)}")
+            #         continue
+
+    text = {
+        "status": "success",
+        "message": "Social embeddings process completed successfully.",
+    }
+    return ResponseObj(text=json.dumps(text)).text
